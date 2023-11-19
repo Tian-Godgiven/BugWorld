@@ -2,34 +2,6 @@ body{
 	display:flex
 }
 
-.div_top{
-	height:8%;
-	font-size:25px;
-	text-align:center;
-}
-
-.div_inner{
-	height:100%;
-	width:98%;
-	margin:0 auto;
-	margin-bottom:2px;
-	font-size:18px;
-	line-height:19px;
-	border:2px solid black;
-	border-radius:3px;
-}
-
-#bug_nest{
-	width:300px;
-	height:400px;
-}
-
-#bug_message{
-	width:300px;
-	height:400px;
-	margin:0 2px;
-}
-
 #next_turn{
 	background-color:black;
 	color:white;
@@ -44,24 +16,3 @@ body{
 	border-radius:3px;
 }
 
-#logs{
-	position:absolute;
-	right:10px;
-	bottom:10px;
-}
-
-#logs .div_inner{
-	width:400px;
-	height:200px;
-}
-
-#change_data{
-	position:absolute;
-	left:10px;
-	bottom:10px;
-}
-
-#change_data .div_inner{
-	width:400px;
-	height:200px;
-}

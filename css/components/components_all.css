@@ -1,0 +1,25 @@
+.tile{
+	position:absolute;
+
+	width:300px;
+	height:400px;
+
+	border:2px solid black;
+	border-radius:3px;
+
+	background-color:white;
+	z-index:1;
+}
+
+.tile_top{
+	height:30px;
+	font-size:25px;
+	margin:5px;
+}
+
+.tile_data{
+	height:calc(100% - 30px);
+
+	font-size:18px;
+	margin:5px;
+}
