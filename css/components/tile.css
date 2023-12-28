@@ -1,0 +1,101 @@
+.tile{
+	box-sizing:border-box;
+	position:absolute;
+	margin:6px;
+
+	width:300px;
+	height:400px;
+
+	min-width:200px;
+	min-height:40px;
+
+	border:2px solid black;
+	border-radius:3px;
+
+	background-color:white;
+	z-index:1;
+
+}
+
+.tile_top{
+	height:30px;
+	font-size:25px;
+	margin:5px;
+}
+
+.tile_icon{
+	max-width:70px;
+	overflow:hidden;
+	display: flex;
+	position:absolute;
+	right:2px;
+	top:2px;
+}
+
+.tileIcon{
+	width:20px;
+	height:20px;
+	margin-left:2px;
+
+	border:2px solid black;
+	border-radius:3px;
+
+	box-sizing: border-box;
+
+	background-position: center;
+  	background-repeat: no-repeat;
+}
+
+.close{
+	background-image: url('../../img/close.png');
+	background-size: 80%;
+}
+
+.clear{
+	background-image: url('../../img/clear.png');
+	background-size: 120%;
+}
+
+.tile_data{
+	height:calc(100% - 45px);
+
+	overflow-y:overlay;
+    overflow-x:hidden;
+
+	font-size:18px;
+	margin-left:5px;
+	margin-bottom:5px;
+}
+
+.tile_data::-webkit-scrollbar{
+	position:relative;
+	right:-5px;
+    width:9px;
+    height:10px;
+}
+
+.tile_data::-webkit-scrollbar-thumb{
+    background-color:black;
+    background-clip: padding-box;
+    border: solid transparent;
+    border-radius:100px;
+}
+
+.tile_data > .data{
+	margin-right:5px;
+}
+
+.data > .state{
+	margin-bottom:5px;
+}
+
+
+.state_name{
+	line-height:21px;
+	flex-shrink:0
+}
+.state_inner{
+	line-height:21px;
+}
+
+.menu

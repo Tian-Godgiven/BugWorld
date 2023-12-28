@@ -1,0 +1,56 @@
+#设施 .facility_information:first-child{
+	border-top:1px dashed black;
+}
+
+.facility_information{
+	position:relative;
+
+	border-bottom:1px dashed black;
+	padding:5px 0;
+}
+
+.facility_information .object_name{
+	font-size:20px;
+}
+
+.facility_information .state{
+	margin:2px 0;
+}
+
+.facility_information .botton_container{
+	position:absolute;
+	top:3px;
+	right:0px;
+
+	display: flex;
+	flex-direction:column;
+	align-items:flex-end;
+}
+
+.facility_information .botton_container .botton{
+	display: inline-block;
+	text-align:center;
+
+	width:40px;
+	margin-right:2px;
+	margin-top:5px;
+
+	border:2px solid black;
+	border-radius:3px;
+}
+
+#facility_menu{
+	background-color:white;
+	overflow-y:auto;
+
+	height:100%;
+	min-width:250px;
+
+	border:2px solid black;
+	border-radius:3px;
+
+	position:absolute;
+
+	left:100%;
+	top:-2px;
+}
