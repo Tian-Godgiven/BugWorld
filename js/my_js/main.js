@@ -1,4 +1,4 @@
-
+console.log("123")
 
 $.when(
 	$.getScript('./js/my_js/ability/global_ability.js'),
