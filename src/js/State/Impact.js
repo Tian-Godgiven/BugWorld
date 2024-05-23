@@ -45,7 +45,34 @@ export function impactToObjectState(impact,object,state_name,state_path){
     }
 }
 
-//使得[effect对象]产生的[影响]消失
+//使得【指定目标】中对应[来源]产生的[影响]消失
+export function loseImapctFrom(object,state_name,source){
+    if(impact){
+        //寻找对应的属性的路径
+        const the_object = findStatePath(object,state_name)
+        let the_state = the_object[state_name]
+        if(state_path){
+            if(_.isArray(state_path)){
+                for( let i of state_path){
+                    the_state = the_state[i]
+                }
+            }
+            else{
+                the_state = the_state[state_path]
+            }
+        }
+        //要求这个state必须拥有“影响”
+        if(the_state.影响 != null){
+            //将其中the_state.影响数组当中来源为“source”的impact删除
+            the_state.影响 = the_state.影响.filter(impact => impact.来源 !== source);
+            //计算剩余属性的影响所产生的数值，并填装到属性上
+            the_state.数值 = countImpact(the_state.影响)
+        }
+        else{
+            console.log(`${object}的属性${state_name}+${state_path}不具备影响`)
+        }
+    }
+}
 
 
 //计算一个影响数组的按照优先级处理的情况下产生的属性值

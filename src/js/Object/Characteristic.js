@@ -11,9 +11,12 @@ class Characteristic{
 	constructor(){
 		this.属性 = {
 			名称 : null,
+			参数 : null,
             词条 : [],
+			优先级 : null,
             信息 : null,
-            所属 : null
+            所属 : null,
+			来源 : null
 		}
 		this.函数 = {}
 	}
@@ -38,26 +41,41 @@ export function bindObjectCharacteristic(object,source){
 	const 特性 = _.cloneDeep(getState(object,"特性"))
 	changeState(object,"特性",[])
 	//遍历其“特性”属性,为其添加对应的特性对象
-	console.log(特性)
 	for(let chara_key of 特性){
-		appendCharacteristic(object,chara_key,source)
+		getCharacteristic(object,chara_key,source)
 	}
 }
 
-//为一个对象附加指定的特性对象
-export function appendCharacteristic(object,chara_key,source){
+//令一个对象获得指定chara_key的特性对象,并触发其“获得”函数
+export function getCharacteristic(object,chara_key,source){
 	//创建特性对象
 	let chara = createCharacteristic(chara_key)
-
-	//将【特性对象】与【对象】双向绑定
-	changeState(chara,"所属",object)
+	//修改【特性】的“所属”和“来源”
+	changeState(chara,{
+		"所属":object,
+		"来源":source
+	})
 	//将特性对象加入指定对象的“特性”属性当中
 	pushToState(object,"特性",chara)
 
 	//触发【特性】的获得函数
-	runObjectFunction(chara,"获得",object)
+	runObjectFunction(chara,"获得")
 }
 
+//触发特性对象的“失去”函数，并使得指定对象失去该的特性
+export function loseCharacteristic(object,chara){
+	//触发其“失去”函数
+	runCharaFunction(chara,"失去")
+	//删除对象中的特性对象
+	popFromState(object,"特性",chara)
+}
 
-
-//触发一个对象的特性的"触发"函数
+//触发一个特性的指定函数
+export function runCharaFunction(chara,func_key){
+	//先获取函数需要用到的参数
+	const paras = getState(chara,"参数")
+	const target = getState(chara,"所属")
+	const source = getState(chara,"来源")
+	//再触发指定函数
+	runObjectFunction(chara,func_key,[target,paras,source])
+}

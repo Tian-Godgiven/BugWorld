@@ -1,4 +1,4 @@
-import _ from "lodash"
+import _, { toNumber } from "lodash"
 import { showInformation } from "../Modules/information"
 import { getState } from "../State/State"
 
@@ -124,9 +124,15 @@ export function countValue(base, string) {
 		return base += string
 	}
 
-	//如果传入的base为“”，则设为0
-	if(base == ""){
-		base = 0
+	let sign
+	//如果传入的base为空，则直接返回string本身
+	if(!base){
+		return string
+	}
+	//如果传入的base是一个带符号数，则需要先保存其符号，然后计算
+	else if(!_.isNumber(base)){
+		sign = /([-+*/×÷])/.exec(base)[0]
+		base = parseFloat(base)
 	}
 
     // 解析字符串中的符号和数值
@@ -155,7 +161,13 @@ export function countValue(base, string) {
 				break;
         }
     }
-    return base;
+
+	//将原本的base中的符号放回去
+	if(sign){
+		base = sign + base
+	}
+
+	return base;
 }
 
 //计算一个对象的指定属性加上对应的值后的结果，主要是用于添加“+”“-”符号

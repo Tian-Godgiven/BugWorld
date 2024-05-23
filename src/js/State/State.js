@@ -145,8 +145,8 @@ export function getState(object, state_name, type) {
     if (value == undefined) {
         value = "无"
     }
-    //如果type == "symbol"则返回带符号的值
-    else if(type == "symbol"){
+    //如果type == "symbol"则返回带符号的值,但前提是这个值是一个纯数字，没有带有符号
+    else if(type == "symbol" && _.isNumber(value)){
         let symbol = value > 0 ? "+":"-"
         value = symbol + value
     }
@@ -162,6 +162,31 @@ export function pushToState(target_object,state_name,value){
     //要求这个属性必须是一个数组
     if(_.isArray(state_value)){
         state_value.push(value)
+    }
+    else{
+        console.log("该属性不是一个对象属性！")
+    }
+}
+//将一个【目标对象】的[数组属性]中的指定的值删除并返回，如果不设定value，则删除并返回最后一位的值
+export function popFromState(target_object,state_name,value){
+    const the_object = findStatePath(target_object, state_name)
+	const state_value = the_object[state_name]
+    //要求这个属性必须是一个数组
+    if(_.isArray(state_value)){
+        //如果value不为空,则找到对应的value，删除并返回
+        if(value){
+            const index = state_value.indexOf(value);
+            if (index !== -1) {
+                return state_value.splice(index, 1)[0]; // 删除并返回指定值
+            } 
+            else {
+                console.log(`值 ${value} 在数组中不存在。`);
+                return false; // 如果值不存在，则返回 undefined
+            }
+        }
+        else{
+            return state_value.pop(value)
+        }
     }
     else{
         console.log("该属性不是一个对象属性！")
