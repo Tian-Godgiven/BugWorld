@@ -1,0 +1,114 @@
+/* 工作Tile */
+	.workTile_div{
+		min-height:55px;
+		border:2px solid black;
+		border-radius:5px;
+		
+		position:relative;
+		padding:10px 0px;
+		align-items: center;
+
+		margin:4px 0px;
+	}
+
+	/* 工作对象的名称 */
+	.workTile_div > div:nth-child(1){
+		font-size:20px;
+		width:40%;
+		text-align:center;
+	}
+	/* 工作对象的信息 */
+	.workTile_div > div:nth-child(2){
+		text-align:left;
+	}
+
+	.workTile_div > .work_delete{
+		position:absolute;
+		right:2px;
+		top:2px;
+	}
+
+
+	.workTile_div#新增工作{
+		justify-content: center;
+		align-items: center;
+		border-style:dashed;
+	}
+
+/* 参与工作菜单 */
+	.workTile_menuDiv{
+		height:25px;
+		display: flex;
+		margin:4px;
+	}
+
+	.workTile_menuDiv > span{
+		white-space:nowrap;
+		margin-right:10px;
+	}
+
+	.workTile_menuDiv input{
+		font-size:20px;
+		width:50px;
+		border: none;
+		border-bottom: 1px solid black;
+		outline: none; /* 可选：去除聚焦时的边框 */
+
+		text-align:right;
+
+		margin-left:10px;
+	}
+
+	.workTile_menu_count{
+		margin-left:auto;
+
+		display:flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.workTile_menu_button{
+		font-weight:bold;
+		width:20px;
+		height:20px;
+
+		text-align: center;
+		line-height: 100%;
+
+		border:2px solid black;
+		border-radius:3px;
+		margin:2px;
+	}
+
+	.workTile_menu_button.disable{
+		color:white;
+		background-color:black;
+	}
+
+/* 新增工作菜单 */
+
+	.workTile_addMenuDiv{
+		display: flex;
+
+		margin-bottom:4px;
+
+		padding:5px 0;
+
+		border:2px solid black;
+		border-radius:3px;
+	}
+
+	.workTile_addMenuDiv .object{
+		width: 40%;
+
+		display:flex;
+		justify-content: center;
+		align-items: center;
+
+		text-align:center;
+
+		font-size:20px;
+	}
+
+
+

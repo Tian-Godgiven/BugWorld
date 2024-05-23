@@ -1,0 +1,5 @@
+.log_div{
+	display: flex;
+	flex-shrink:0;
+}
+

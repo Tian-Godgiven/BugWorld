@@ -1,0 +1,37 @@
+{
+  "name": "bug-world",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "server": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tian-Godgiven/BugWorld.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Tian-Godgiven/BugWorld/issues"
+  },
+  "homepage": "https://github.com/Tian-Godgiven/BugWorld#readme",
+  "dependencies": {
+    "express": "^4.19.2",
+    "jquery": "^3.7.1",
+    "jquery-ui": "^1.13.3",
+    "lodash": "^4.17.21",
+    "util": "^0.12.5"
+  },
+  "devDependencies": {
+    "css-loader": "^7.1.1",
+    "html-webpack-plugin": "^5.6.0",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-middleware": "^7.2.1"
+  }
+}

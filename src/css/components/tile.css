@@ -1,0 +1,90 @@
+.tile{
+	box-sizing:border-box;
+	position:absolute !important;
+
+	width:300px;
+	height:400px;
+
+	min-width:200px;
+	min-height:40px;
+
+	padding:2px;
+
+	outline: 2px solid black;
+	outline-offset: -4px;
+
+	border:2px solid transparent;
+
+	background-color:white;
+	z-index:1;
+
+}
+
+.tile_menu{
+	box-sizing:border-box;
+	position:absolute !important;
+
+	display: none;
+
+	width:300px;
+	height:400px;
+
+	left:calc(100% - 4px);
+	top:-2px;
+
+	min-width:200px;
+	min-height:40px;
+
+	padding:2px;
+
+	outline: 2px solid black;
+	outline-offset: -4px;
+
+	border:2px solid transparent;
+
+	background-color:white;
+	z-index:1;
+}
+
+.tile_name{
+	height:30px;
+	font-size:25px;
+	margin:5px;
+}
+
+.tile_button_container{
+	max-width:70px;
+	overflow:hidden;
+	display: flex;
+	position:absolute;
+	right:4px;
+	top:4px;
+}
+
+.tile_data{
+	height:calc(100% - 45px);
+
+	overflow-y:overlay;
+    overflow-x:hidden;
+
+	font-size:18px;
+	margin-left:5px;
+	margin-bottom:5px;
+}
+
+.tile_data > .data{
+	margin-right:5px;
+}
+
+.data > .state{
+	margin-bottom:5px;
+}
+
+.state > div:first-child{
+	line-height:21px;
+	flex-shrink:0
+}
+.state > div:nth-child(2){
+	line-height:21px;
+	flex-wrap: wrap;
+}
