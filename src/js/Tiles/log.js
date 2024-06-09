@@ -1,6 +1,6 @@
-import { createTile } from "../Modules/tile.js"
-import { objectToDiv } from "../app/global_ability.js"
-import { getState } from "../State/State.js"
+import { createTile } from "../Modules/tile/tile.js"
+import { objectToDiv } from "../Modules/objectDiv.js"
+import { stateValue } from "../State/State.js"
 import "../../css/components/log.css"
 
 //创建日志栏

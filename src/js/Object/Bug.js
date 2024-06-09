@@ -1,13 +1,17 @@
 import Bug_lib from "../library/Bug/Bug_lib.json"
 import * as Bug_func_lib from "../library/Bug/Bug_func_lib"
 
-import { getState } from "../State/State";
+import { addStateTo, stateValue, pushToState } from "../State/State";
 import { changeState } from "../State/State";
 import { error } from "jquery";
-import _, { assign } from "lodash"
+import _ from "lodash"
 import { bindObjectCharacteristic } from "./Characteristic";
-import { addStateToObject, loadStatesToObject } from "../State/State";
-import { initObject } from "./Object";
+import { initObject, occupySpace } from "./Object";
+import { createImpact } from "../State/Impact";
+import { runObjectMovement } from "../State/Movement";
+import { appendLog } from "../Tiles/log";
+import { impactToObjectState } from "../State/Impact"
+import { updateBugGroupTile } from "../Tiles/bugGroup";
 
 class Bug {
 	constructor() {
@@ -21,7 +25,7 @@ class Bug {
 			特性 : [],
 			词条 : [],
 			信息 : null,
-			状态 : []
+			状态 : [],
 		};
 		this.单位={
 			寿命: "回合",
@@ -32,77 +36,91 @@ class Bug {
 			饥饿: "生命/回合",
 			回复: "生命/回合"
 		};
-		this.函数={};
-		this.占有={}
+		this.行为={};
+		this.占有=[];
 	}
 }
 
 //创建虫群对象
-export function createBug(bug_key,num,states){
+export function createBug(bug_key,num,source,states){
 	let bug = new Bug()
 	// 从lib中获取对象的属性数据
-	let bug_json = Bug_lib[bug_key]
+	let bug_state = Bug_lib[bug_key]
 	// 初始化一些属性和参数
 	const more_states = {
 		数量 : num,
 		参数 : {
 			寿命 : {now : 1},
-			生命 : {now : bug_json.参数.生命.max},
+			生命 : {now : bug_state.参数.生命.max},
 			储备 : {now : 0},
 		}
 	}
 	// 将这个属性与传来的“修改属性”所连接
 	Object.assign(more_states,states)
-	// 初始化这个对象的属性
-	initObject(bug,bug_json,more_states)
-
+	// 初始化行为
+	const bug_func = _.cloneDeep(Bug_func_lib[bug_key])
+	// 初始化这个对象
+	initObject(bug,source,bug_state,bug_func,more_states)
 
 	//为【虫群对象】绑定【特性】
 	bindObjectCharacteristic(bug)
-	//为【虫群对象】绑定函数
-	bug.函数 = _.cloneDeep(Bug_func_lib[bug_key])
-
-	console.log(bug)
 
 	return bug
 }
 
 //令虫群对象被一个来源所占有
 // 变量解释：虫群对象，需要的数量，占有来源，占有的标识
-export function occupyBug(bug,need_num,source,occupy_name){
+export function occupyBug(bug,need_num,source){
 	//占有数量不能大于空闲数量
 	if(need_num > getFreeBug(bug)){
-		console.log(`空闲的${getState(bug,"名称")}数量不足`)
+		console.log(`空闲的${stateValue(bug,"名称")}数量不足`)
 		return false
 	}
 
-	//判断这个占有对象是否存在，如果已经存在，则增加其数量
-	if(bug.占有.hasOwnProperty(occupy_name)){
-		bug.占有[occupy_name].占有数量 += need_num
+	//判断这个占有源是否存在，如果已经存在，则增加其数量
+	let temp = false
+	for(let 占有对象 of bug.占有){
+		if(source == 占有对象.占有来源){
+			占有对象.占有数量 += need_num
+			temp = true
+			break;
+		}
 	}
+
 	//否则制作一个占有对象
-	else{
+	if(!temp){
 		const occupy = {
 			占有数量:need_num,
-			来源:source
+			占有来源:source
 		}
 		//放入占有属性中
-		bug.占有[occupy_name] = occupy
+		bug.占有.push(occupy)
 	}
 }
 //解除虫群对象的占用
-export function unoccupyBug(bug,bug_num,occupy_name){
-	const occupy = bug.占有[occupy_name]
-	if(occupy == NaN){
-		throw new error("123")
+export function unoccupyBug(bug,bug_num,source){
+	let occupy
+	let occupy_index 
+	for(let 占有对象 of bug.占有){
+		if(source == 占有对象.占有来源){
+			occupy = 占有对象
+			occupy_index = bug.占有.indexOf(occupy)
+			break;
+		}
 	}
+
+	if(!occupy){
+		console.log(bug,source)
+		throw new error("无法解除对象(1)的占有，对应来源(2)的占有对象在其中不存在")
+	}
+
 	//减少对应的占有数量
 	if(bug_num < occupy.占有数量){
-		bug.占有[occupy_name].占有数量 -= bug_num
+		occupy.占有数量 -= bug_num
 	}
-	//删除对应的占用对象
+	//若减少数量刚好为占有数量，则删除对应的占用对象
 	else if(bug_num == occupy.占有数量){
-		delete bug.占有[occupy_name]
+		bug.占有.splice(occupy_index,1)
 	}
 	else{
 		console.log("解除占用的数量错误！")
@@ -110,36 +128,70 @@ export function unoccupyBug(bug,bug_num,occupy_name){
 	}
 }
 //获得一个指定占有对应的占有信息
-export function getOccupyBug(bug,occupy_name){
-	if(bug.占有.hasOwnProperty(occupy_name)){
-		return bug.占有[occupy_name].占有数量
+export function getOccupyBug(bug,source){
+	for(let 占有对象 of bug.占有){
+		if(source == 占有对象.占有来源){
+			return 占有对象.占有数量
+		}
 	}
-	else{
-		return 0
-	}
-	
-	
+
+	//如果不存在source相同的占有对象，则认定没有被对应来源所占有
+	return 0
 }
-//获得一个虫群对象的未被占有的数量
+//获得一个虫群对象当中未被占有的数量
 export function getFreeBug(bug){
-	let 数量 = getState(bug,"数量")
+	let 数量 = stateValue(bug,"数量")
 	//遍历其占有对象，依次减去被占有的数量
-	for( let occupy in bug.占有){
-		数量 -= bug.占有[occupy].占有数量
+	for( let occupy of bug.占有){
+		数量 -= occupy.占有数量
 	}
 	return 数量
 }
 
-//判断object对象的剩余空间属性是否满足让指定的虫群对象所占据
-export function spaceEnoughForBug(bug,bugNest){
-	var bug_num = getState(bug,"数量")
-	let nest_space = getState(bugNest,"空间")
-	var available_space = nest_space.max - nest_space.now
-	//允许进入
-	if(available_space >= getState(bug,"占据") * bug_num){
+//令虫群单位加入一个对象,修改虫群对象的所属为这个对象
+//要求这个对象必须具备“虫群”属性用于放置虫群单位
+export function bugJoinTo(bug, target, source) {
+	//判断目标是否满足bug对象的加入需求
+	if (runObjectMovement(bug, "加入需求", target)){
+		//触发该对象的加入行为，若加入过程中返回了false，则加入失败
+		runObjectMovement(bug, "加入", target)
+		//令该虫群对象占据目标的空间,如果空间不足，会返回false
+		if(!occupySpace(bug,target)){
+			return false
+		}
+
+		//修改虫群单位的所属
+		changeState(bug, "所属", target)
+		//如果对象的“虫群”属性中已有同名的对象，则令其加入
+		const bug_name = stateValue(bug,"名称")
+		const bugGroup = stateValue(target, "虫群")
+		if(_.has(bugGroup,bug_name)){
+			bugGroup[bug_name].push(bug)
+		}
+		//否则直接加入"虫群"当中
+		else {
+			bugGroup[bug_name] = [bug]
+		}
+		
+		//日志输出
+		appendLog([bug, "x" + stateValue(bug, "数量"), "进入了", target])
 		return true
 	}
-	else{
+	else {
+		//未满足的情况下,无法进入虫巢
+		appendLog([target, "未能满足", bug, "的加入需求"])
 		return false
 	}
 }
+//返回对象是否参与了某个事务
+export function haveOccupy(object, source) {
+	//遍历对象的占有
+	for (let occupy of object.占有) {
+		if (occupy.占有来源 == source) {
+			return true
+		}
+	}
+	return false
+}
+
+

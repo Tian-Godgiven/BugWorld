@@ -1,8 +1,8 @@
-import { createTile, createTileMenu, dataTile } from "../Modules/tile"
-import { createStateDiv, objectToDiv } from "../app/global_ability"
-import { getUnit } from "../State/State"
-import { getState } from "../State/State"
-import "../../css/components/facility.css"
+import { createTile, createTileMenu, dataTile } from "../../Modules/tile/tile"
+import { objectToDiv } from "../../Modules/objectDiv";
+import { getUnit } from "../../State/State"
+import { stateValue } from "../../State/State"
+import "../../../css/components/facility.css"
 
 //创建[设施]tile，包含一个menu子元素
 export function createFacilityTile(bugNest){
@@ -17,14 +17,14 @@ function createFacilityTileDiv(facility){
 	//设施名称，如果有等级则还会显示等级
 	const object_div = objectToDiv(facility,"level")
 	//设施数量
-	const num = getState(facility,"数量")
+	const num = stateValue(facility,"数量")
 	//设施词条
 	let entry = ""
-	for(let i of getState(facility,"词条")){
+	for(let i of stateValue(facility,"词条")){
 		entry += "["+i+"]"
 	}
 	//设施效果
-	const ability = getState(facility,"效果")
+	const ability = stateValue(facility,"效果")
 
 	const facility_div = $("<div>",{class:"facility_information object"})
 		.append(object_div)
@@ -86,7 +86,7 @@ export function updateFacilityTile(bugNest){
 	//当前设施栏，显示虫巢中目前拥有的设施与这些设施的效果
 	var all_container_div = $("<div>",{class:"data"})
 	//遍历虫巢中的设施
-	var facilities = getState(bugNest,"设施")
+	var facilities = stateValue(bugNest,"设施")
 	for(let i in facilities){
 		var facility = facilities[i]
 		var facility_div = createFacilityTileDiv(facility)

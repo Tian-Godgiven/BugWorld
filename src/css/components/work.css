@@ -47,68 +47,8 @@
 		margin-right:10px;
 	}
 
-	.workTile_menuDiv input{
-		font-size:20px;
-		width:50px;
-		border: none;
-		border-bottom: 1px solid black;
-		outline: none; /* 可选：去除聚焦时的边框 */
+	
 
-		text-align:right;
-
-		margin-left:10px;
-	}
-
-	.workTile_menu_count{
-		margin-left:auto;
-
-		display:flex;
-		justify-content: center;
-		align-items: center;
-	}
-
-	.workTile_menu_button{
-		font-weight:bold;
-		width:20px;
-		height:20px;
-
-		text-align: center;
-		line-height: 100%;
-
-		border:2px solid black;
-		border-radius:3px;
-		margin:2px;
-	}
-
-	.workTile_menu_button.disable{
-		color:white;
-		background-color:black;
-	}
-
-/* 新增工作菜单 */
-
-	.workTile_addMenuDiv{
-		display: flex;
-
-		margin-bottom:4px;
-
-		padding:5px 0;
-
-		border:2px solid black;
-		border-radius:3px;
-	}
-
-	.workTile_addMenuDiv .object{
-		width: 40%;
-
-		display:flex;
-		justify-content: center;
-		align-items: center;
-
-		text-align:center;
-
-		font-size:20px;
-	}
-
+	
 
 

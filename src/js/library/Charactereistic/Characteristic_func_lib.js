@@ -1,14 +1,13 @@
-import { addAbleWorkToBugNest } from "../../Object/Work"
-import { appendFunction } from "../../app/global_ability"
-import { haveState , appendState , getState, pushToState , changeState } from "../../State/State"
-import { getEntry } from "../../State/Entry"
+import { addWorkToBugNest, deleteWorkFrom } from "../../Object/Work"
+import { addMovementEffect, deleteMovementEffect } from "../../State/Movement"
+import { haveState , addStateTo , stateValue, pushToState , changeState, deleteStateFrom } from "../../State/State"
+import { getEntry, loseEntry } from "../../State/Entry"
 import { createImpact, impactToObjectState, loseImapctFrom } from "../../State/Impact"
-import { createEffect, getEffectFrom , loseEffectFrom , runEffect , stopEffect } from "../../State/Effect"
 import { loseCharacteristic, runCharaFunction, runCharacteristic } from "../../Object/Characteristic"
 
-//嗉囊特性的通用函数
+//嗉囊特性的通用行为
 	function 嗉囊func(){
-		const 函数 = {
+		return {
 			//获得这个特性时,令其生效
 			获得 : function(chara){
 				runCharaFunction(chara,"生效")
@@ -18,11 +17,11 @@ import { loseCharacteristic, runCharaFunction, runCharacteristic } from "../../O
 				runCharaFunction(chara,"失效")
 			},
 			//令对象的"储备max"添加对应参数的影响
-			生效 : function(chara,object,paras){
-				if(getState(object,"储备")){
-					const value = getState(chara,["参数","储备"])
+			生效 : function(chara,object){
+				if(stateValue(object,"储备")){
+					const value = stateValue(chara,["参数","储备"])
 					const impact = createImpact(chara,value,1)
-					impactToObjectState(impact,object,"储备","max")
+					impactToObjectState(impact,object,["储备","max"])
 				}
 				else{
 					console.log("该单位不具备储备属性")
@@ -33,8 +32,6 @@ import { loseCharacteristic, runCharaFunction, runCharacteristic } from "../../O
 				loseImapctFrom(object,"储备",chara)
 			}
 		}
-		
-		return 函数
 	}
 	//令对象的"最大储备"+140
 	export const 大嗉囊 = 嗉囊func()
@@ -49,11 +46,6 @@ export const 虫母 = function(){
 	return {
 		获得 : function(chara){
 			runCharaFunction(chara,"生效")
-			//测试：使得对象获得“+4卵/回合”的影响
-			const value = "+4"
-			const object = getState(chara,"所属")
-			const impact = createImpact(chara,value,1)
-			impactToObjectState(impact,object,"产卵")
 		},
 		失去 : function(chara){
 			runCharaFunction(chara,"失效")
@@ -61,34 +53,37 @@ export const 虫母 = function(){
 		生效:function(chara,object){
 			//令对象获得新词条：产卵者，这是可以进行产卵工作的标志词条
 			getEntry(object,"产卵者")
-			// //为对象的"加入"行为中添加一个效果对象：令其所属的虫巢获得产卵工作,这个工作的来源为该特性
-			// const 词条 = ["身份"]
-			// const 优先级 = 0
-			// const 函数 = {
-			// 	生效 : function(effec,object){
-
-			// 	}
-			// }
-			
-			// const func = function(object,bugNest){
-			// 	addAbleWorkToBugNest(bugNest,chara,"产卵")
-			// }
-			// appendFunction(object,"加入",func)
+			//当对象加入虫巢时，令其所属的虫巢获得产卵工作,这个工作的来源为该特性
+			const move_effect = {
+				优先级 : 0,
+				效果 : function(object,bugNest){
+					addWorkToBugNest(bugNest,chara,"产卵")
+				}
+			}
+			addMovementEffect(object, chara,"加入",move_effect)
 			//令对象获得特殊属性：产卵
 			if(!haveState(object,"产卵")){
-				const value = getState(chara,"产卵")
+				const value = stateValue(chara,"产卵")
 				const new_state = {
 					产卵 : {
 						数值 : value,
 						单位 : "卵/回合"
 					}
 				}
-				appendState(object,chara,"特殊",new_state)
+				addStateTo(object,chara,"特殊",new_state)
 			}
 		},
-		失效:function(chara,object,para,source){
-			//令对象失去
+		失效:function(chara,object){
+			//令对象失去产卵者词条
+			loseEntry(object,"产卵者")
+			//从对象的“加入”行为中删除对应来源为chara的行为对象
+			deleteMovementEffect(object,chara,"加入")
+			//从对象所在的虫巢中删除对应来源的可进行工作
+			const bugNest = stateValue(object,"所属")
+			deleteWorkFrom(bugNest,chara)
+			//令对象失去对应参数的产卵属性
+			deleteStateFrom(object,chara,["特殊","产卵"])
 		}
-		
 	}
 }()
+

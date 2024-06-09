@@ -1,0 +1,96 @@
+#命令 .focusing{
+    background-color: lightblue;
+}
+
+.orderTile_title{
+    font-size: 20px;
+}
+.orderTile_bugDiv{
+    display: flex;
+    
+    padding-left: 10px;
+    min-width: 100%;
+}
+
+.orderTile_bugDiv div{
+    flex-shrink: 0;
+}
+
+/* 命令虫群对象div */
+.orderTile_orderDiv{
+    position:relative;
+    margin:4px 0px;
+    padding:5px;
+    box-sizing: border-box;
+    width:calc(100% - 8px);
+
+    min-height:55px;
+    border:2px solid black;
+    border-radius:5px;
+}
+.orderTile_workDiv{
+    display: flex;
+    align-items: center;
+}
+
+/* 工作对象的名称 */
+.orderTile_workDiv > div:nth-child(1){
+    font-size:20px;
+    width:30%;
+    text-align:center;
+    font-weight: bold;
+}
+/* 工作对象的信息 */
+.orderTile_workDiv > div:nth-child(2){
+    text-align:left;
+}
+
+/* 命令数量控制div */
+.orderTile_numDiv{
+    display: none;
+    margin-top:5px;
+    padding-top: 5px;
+    border-top: 1px dashed black;
+}
+
+.orderTile_numDiv > div{
+    display: flex;
+    justify-content: center;
+	align-items: center;
+}
+
+/* 数量控制div的按钮外壳 */
+.orderTile_count{
+    display: flex;
+    justify-content: center;
+	align-items: center;
+}
+/* 命令数量控制按钮 */
+.orderTile_button{
+    font-weight:bold;
+    width:20px;
+    height:20px;
+
+    text-align: center;
+    line-height: 100%;
+
+    border:2px solid black;
+    border-radius:3px;
+    margin:2px;
+}
+.orderTile_button.disable{
+    color:white;
+    background-color:black;
+}
+/* 命令数量显示和输入 */
+.orderTile_input{
+    font-size:20px;
+    width: 35%;
+    border: none;
+    border-bottom: 1px solid black;
+    outline: none; /* 可选：去除聚焦时的边框 */
+    margin-right: 1px;
+    text-align:right;
+
+    margin-left:10px;
+}

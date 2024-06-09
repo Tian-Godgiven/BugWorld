@@ -2,9 +2,9 @@
 import Information_lib from "../library/Information_lib.json"
 
 import { appendLog } from "../Tiles/log";
-import { stateIntoTileData } from "../app/global_ability";
-import { getState } from "../State/State";
-import { abilityTile, upToTop } from "./tile";
+import { stateToTileData } from "./tile/tileData";
+import { stateValue } from "../State/State";
+import { abilityTile, upToTop } from "./tile/tile";
 
 //创建信息栏，一个显示指定信息的tile
 function createInformation(name,inner,object){
@@ -63,8 +63,8 @@ $("#main").on("click",".state > div:first-child",function(event){
 
 //显示与一个对象有关的information
 export function showInformation(object){
-	var name = getState(object,"名称")
-	var information = stateIntoTileData(object)
+	var name = stateValue(object,"名称")
+	var information = stateToTileData(object)
 	createInformation(name,information,object)
 }
 

@@ -1,58 +1,152 @@
-import { createTile,dataTile } from "../Modules/tile";
-import { getState } from "../State/State";
-import { objectToDiv } from "../app/global_ability";
+import { createTile, dataTile } from "../Modules/tile/tile";
+import { stateValue } from "../State/State";
+import { objectToDiv } from "../Modules/objectDiv";
+import { getSlideDiv } from "../Modules/tile/tileButton";
+import "../../css/components/bugGroup.css"
+import 'gridmanager/index.css';
+import GridManager from 'gridmanager';
+import { template } from "lodash";
 
-//创建一个虫群Tile,显示虫巢中的虫群状态
+let bugGroupGridCol = [
+	{key : "名称", text : "名称"},
+	{key : "数量", text : "数量"},
+	{key : "生命", text : "生命"},
+	{key : "寿命", text : "寿命"},
+	{key : "工作", text : "工作"},
+	{key : "攻击", text : "攻击"},
+	{key : "防御", text : "防御"},
+]
+
+//创建一个虫群Tile,以表格形式显示虫巢中的虫群状态
 export function createBugGroupTile(bugNest){
-	createTile("虫群",bugNest)
-	updateBugGroupTile(bugNest)
+	const tile = createTile("虫群",bugNest)
+	//将表格对象放入其中
+	$(tile).children(".tile_data").append(`<table id="bugGroupTileGrid"></table>`)
+	//使用gridManager构造该表格
+	document.querySelector('#bugGroupTileGrid').GM({
+		gridManagerName: 'bugGroupTileGrid',
+		ajaxData:{data:[]},
+		supportCheckbox: false,
+		supportAutoOrder: false,
+		supportAdjust: false,
+		supportDrag: false,
+		columnData: bugGroupGridCol,
+		supportTreeData: true,
+		treeConfig: {
+			// 子节点关键字，默认为'children'
+			treeKey: '子元素'
+		}
+	},function(){
+		updateBugGroupTile(bugNest)
+	});
 }
+
 
 //根据虫巢对象修改虫群Tile的数据显示
 export function updateBugGroupTile(bugNest){
-	var bugGroup_data = $("<div>",{
-		class:"data"
-	})
-	//根据虫巢单位的信息创建数据表格
-	var table = $('<table>');
-	table.append(`
-		<tr>
-	    	<th class="state" name="名称">名称</th>
-	    	<th class="state" name="数量">数量</th>
-	    	<th class="state" name="生命">生命</th>
-	    	<th class="state" name="寿命">寿命</th>
-	    	<th class="state" name="工作">工作</th>
-	    	<th class="state" name="攻击">攻击</th>
-	    	<th class="state" name="防御">防御</th>
-	  	</tr>
-	`);
-	var bugGroup = getState(bugNest,"虫群")
-	for(let i in bugGroup){
-		var bug = bugGroup[i]
-		var 名称 = getState(bug,"名称")
-		var 数量 = getState(bug,"数量")
-		var 生命 = getState(bug,"生命")
-		var 寿命 = getState(bug,"寿命")
-		var 工作 = getState(bug,"工作")
-		var 攻击 = getState(bug,"攻击")
-		var 防御 = getState(bug,"防御")
-		var tr = $("<tr>",{
-			class:"object",
-			name:名称
+	//获取虫巢的虫群属性的值，并填装给grid
+	const gridData = makeBugGroupGridData(stateValue(bugNest,"虫群"))
+	const table = document.querySelector('#bugGroupTileGrid')
+	//将数据填装给grid，同时使得bugObjects中的对象放入grid中
+	GridManager.setAjaxData(table, gridData,function(){
+		//然后将bugObjects依次放入“名称”列
+		let bug_num = 0
+		const tr = $("#bugGroupTileGrid").children("tbody").children("tr")
+		tr.each(function(){
+			const td = $(this).children('td[td-name="名称"]')
+			if(td.text() == ""){
+				const div = objectToDiv(bugObjects[bug_num])
+				bug_num += 1
+				$(td).append(div)
+			}
 		})
-		const td = objectToDiv(bug)
-		tr.append(td,`
-	    	<td>` + 数量 + `</td>
-	    	<td>` + 生命.now.数值+"/"+生命.max.数值 + `</td>
-	    	<td>` + 寿命.now.数值+"/"+寿命.max.数值 + `</td>
-	    	<td>` + 工作 + `</td>
-	    	<td>` + 攻击 + `</td>
-	    	<td>` + 防御 + `</td>
-	    `)
-	    table.append(tr)
+	});
+	
+}
+
+//生成虫群表格所需要的数据
+let bugObjects//存储参与形成虫群表格的虫群对象,用于在表格的首栏方式objectDiv对象
+function makeBugGroupGridData(bugGroup){
+	const gridData = []
+	bugObjects = []
+	//遍历虫群属性，获得表格每一行的数据
+	for(let bugName in bugGroup){
+		const bugs = bugGroup[bugName]
+		if(bugs.length == 1){
+			const bug = bugs[0]
+			const line_data = createBugGroupGridLine(bug)
+			gridData.push(line_data)
+			bugObjects.push(bug)
+		}
+		//如果虫群对象数组中有多个单位，则生成一个可下滑显示细则单位的按键
+		else{
+			//获取同名虫群对象的总数，用于之后制作标题div
+			let bugNum_all = 0 
+			//虫群子元素的容器
+			let bugGroup_children = []
+			for(let bug of bugs){
+				bugNum_all += stateValue(bug,"数量")
+				const line_data = createBugGroupGridLine(bug)
+				bugGroup_children.push(line_data)
+				bugObjects.push(bug)
+			}
+			//创建一个虫群对象的标题div，显示其总数，但不会显示细则的对象
+			let line_data = {
+				名称 : bugName,
+				数量 : bugNum_all,
+				子元素 : bugGroup_children
+			}
+			gridData.push(line_data)
+		}
 	}
-	//将表格填入数据中
-	bugGroup_data.append(table)
-	//用数据更新虫群Tile
-	dataTile("虫群",bugGroup_data)
+	return {data : gridData}
+
+	//通过虫群对象生成并填装对应的虫群行信息
+	function createBugGroupGridLine(bug){
+		const line_data = {
+			数量 : stateValue(bug,"数量"),
+			生命 : stateValue(bug,["生命","now"]) + "/" + stateValue(bug,["生命","max"]),
+			寿命 : stateValue(bug,["寿命","now"]) + "/" + stateValue(bug,["寿命","max"]),
+			工作 : stateValue(bug,"工作"),
+			攻击 : stateValue(bug,"攻击"),
+			防御 : stateValue(bug,"防御")
+		}
+		return line_data
+	}
+}
+
+
+//将一个虫群对象转换为虫群div
+export function bugGroupToDiv(bugGroup){
+	//一个外壳
+	let container = $(`<div class="bugGroup"></div>`)
+	//遍历虫群属性
+	for(let bugName in bugGroup){
+		//获得虫群对象的数组,遍历数组，获得同名虫群单位的总数
+		const bugs = bugGroup[bugName]
+		//如果虫群数组的长度为1，则直接将这个对象的对象div放入容器
+		if(bugs.length == 1){
+			const bug = bugs[0]
+			const bugDiv = objectToDiv(bug,"num")
+			container.append(bugDiv)
+		}
+		//否则，遍历虫群数组，制作各个虫群对象的子div,这些子div放置在一个容器中，有一个共同的标题显示其总数，在点击标题时，可以展开或折叠子div
+		else{
+			//获取同名虫群对象的总数，用于之后制作标题div
+			let bugNum_all = 0 
+			//虫群子元素的容器
+			const bugInner = $(`<div class='bugGroup_inner'></div>`)
+			for(let bug of bugs){
+				bugNum_all += stateValue(bug,"数量")
+				const bugDiv = objectToDiv(bug,"num")
+				bugInner.append(bugDiv)
+			}
+			//创建一个虫群对象的标题div，显示其总数
+			let bugTitle = $(`<div class="bugGroup_title">${bugName} x ${bugNum_all}</div>`)
+			//将它们变成可滑动的div
+			const bugGroup_div = getSlideDiv(bugTitle,bugInner,"down")
+			container.append(bugGroup_div)
+		}
+	}
+	return container
 }

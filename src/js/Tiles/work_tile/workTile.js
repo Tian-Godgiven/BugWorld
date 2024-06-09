@@ -1,9 +1,9 @@
-import { createTile , createTileMenu } from "../Modules/tile.js"
-import "../../css/components/work.css"
-import { getUnit } from "../State/State.js"
-import { getState } from "../State/State.js"
-import { stopWork } from "../Object/Work.js"
-import { showWorkTileMenu } from "./menu/workTile_menu.js"
+import { createTile , createTileMenu } from "../../Modules/tile/tile.js"
+import "../../../css/components/work.css"
+import { getUnit } from "../../State/State.js"
+import { stateValue } from "../../State/State.js"
+import { stopWork } from "../../Object/Work.js"
+import { showWorkTileMenu } from "./workTile_menu.js"
 
 //创建[工作]Tile，包含两个menu子元素
 export function createWorkTile(bugNest){
@@ -15,8 +15,6 @@ export function createWorkTile(bugNest){
 						  <div class='workTile_div flex' id='新增工作'>新增工作</div>\
 					  </div>")
 	$(tile).children('.tile_data').append(data_div)
-	//创建工作信息栏的子菜单
-	createTileMenu("",tile)
 }
 
 //向[工作]Tile中添加一个工作div
@@ -30,7 +28,7 @@ export function appendWorkTileDiv(work){
 //创建一个承载【工作对象】信息的div并返回
 function createWorkTileDiv(work){
 	//工作磁贴内，每一个【工作对象】的信息div，以工作对象的名称为id
-	var div = $(`<div class='workTile_div flex' id='${getState(work,"名称")}'></div>`)
+	var div = $(`<div class='workTile_div flex' id='${stateValue(work,"名称")}'></div>`)
 	//绑定work对象
 	$(div).data("work",work)
 	//更新其中的内容
@@ -42,17 +40,7 @@ function createWorkTileDiv(work){
 //更新一个work_div当中的内容，将work信息加载进内
 export function updateWorkTileDiv(work_div){
 	const work = $(work_div).data("work")
-	// 添加内容
-	const 名称 = getState(work,"名称");
-	const 效率 = "效率：" + getState(work,"效率","symbol") + getUnit(work,"效率")
-	let 进度 = getState(work,"进度")
-	//根据进度的种类获得其内容
-	if(进度 == "无"){
-		进度 = "进度：无" 
-	}
-	else{
-		进度 = "进度：" + 进度.now.数值 + "/" + 进度.max.数值 + getUnit(work,"进度")
-	}
+	
 	//依次包含工作对象的名称，进度+效率，对应的按键
 	$(work_div).html(`
 		<div class='object'>

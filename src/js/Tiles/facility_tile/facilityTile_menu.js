@@ -53,7 +53,7 @@ $(document).on("click",".facility_build",function(){
 	//加入新的内容
 	var data_div = $("<div>",{class:"data"})
 	//将该设施的建设工作的信息显示在这里
-	var work_func = facility.函数.建设
+	var work_func = facility.行为.建设
 	var work = work_func(facility)
 	var work_name = getState(work,"名称")
 	var div = createAddWorkMenuDiv(work)
@@ -83,7 +83,7 @@ $(document).on("click",".facility_demolition",function(){
 	//加入新的内容
 	var data_div = $("<div>",{class:"data"})
 	//将该设施的拆除工作的信息显示在这里
-	var work_func = facility.函数.拆除
+	var work_func = facility.行为.拆除
 	var work = work_func(facility)
 	var work_name = getState(work,"名称")
 	var div = createAddWorkMenuDiv(work)

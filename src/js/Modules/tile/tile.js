@@ -2,16 +2,16 @@ import 'jquery-ui/ui/widgets/draggable'
 import 'jquery-ui/ui/widgets/droppable'
 import 'jquery-ui/ui/widgets/resizable'
 
-import '../Modules/information'
-
-import "../../css/components/tile.css"
-import "../../css/components/cube.css"
+import '../information'
+import './tileButton'
+import "../../../css/tile/tile.css"
+import "../../../css/tile/cube.css"
 
 //创建一个信息框(tile)
 export function createTile(name,object,buttons){
 	var tile = $(`<div class="tile" id="${name}">
-					 <div class="tile_name">${name}</div>
-					 <div class="tile_data"></div>
+					<div class="tile_name">${name}</div>
+					<div class="tile_data"></div>
 					<div class="tile_button_container">
 						<div class="tile_button button close_btn"></div>
 					</div>
@@ -30,8 +30,6 @@ export function createTile(name,object,buttons){
 
 	//赋予功能
 	abilityTile(tile)
-	//创建对应的cube
-	createCube(tile)
 	//放进页面中
 	$("#tile_container").append(tile)
 
@@ -55,7 +53,7 @@ export function createTileMenu(name,tile,buttons){
 //使得tile_container可以被tile吸附
 $("#tile_container").draggable()
 $("#tile_container").draggable("disable")
-//为tile框赋予功能
+//为tile框赋予功能:拖动，调整尺寸，点击移动到最前方
 export function abilityTile(tile){
 	//拖动
 	$(tile).draggable({
@@ -76,12 +74,6 @@ export function abilityTile(tile){
 	});
 }
 
-//点击关闭一个信息栏或一个信息菜单栏
-$("#main").on("click",".tile_button.close_btn",function(event){
-	event.stopPropagation();
-	$(this).parent().parent().hide()
-})
-
 //将指定的tile显示在最上方
 export function upToTop(tile){
 	let highestZIndex = 0;
@@ -98,29 +90,25 @@ export function dataTile(tileName,data){
 	$("#"+tileName+" > .tile_data").html(data)
 }
 
-
-//创建cube，每一个磁贴都对应了一个cube
-function createCube(tile){
-	const name = $(tile).attr("id")
-	const cube = $(`<div class='cube' id=${name}>${name}</div>`)
-	$(cube).data("tile",tile)
-	$("#cube_container").append(cube)
-	abilityCube(cube)
+$.fn.changeTileName = function (new_name){
+	if($(this).is(".tile") || $(this).is(".tile_menu")){
+		$(this).children(".tile_name").text(new_name)
+	}
 }
 
-function abilityCube(cube){
+
+//创建cube，点击cube即可显示对应的磁贴
+export function createCube(tile){
+	const name = $(tile).attr("id")
+	const cube = $(`<div class='cube' id=${name}>${name}</div>`)
+	$("#cube_container").append(cube)
 	//点击cube时，令对应的tile显示在最上层，若对应的tile已经显示了，则令其隐藏
 	$(cube).on("click",function(){
-		var tile = $(cube).data("tile")
-		var shown = $(tile).css("display")
-		if(shown == "none"){
-			$(tile).show()
-			upToTop(tile)
-		}
-		else if(shown == "block"){
-			$(tile).hide()
-		}
+		$(tile).show()
+		upToTop(tile)
+		//随后移除这个cube
+		$(this).remove()
 	})
-}	
+}
 
 

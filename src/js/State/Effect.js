@@ -1,23 +1,22 @@
-import { runObjectFunction } from "../app/global_ability"
+import { runObjectMovement } from "./Movement"
 import { impactToObjectState } from "./Impact"
 
-//创建一个初步的effect对象
-export function createEffect(entry,level,action){
+//创建一个effect对象
+export function createEffect(entry,level,movement,source){
     if(!_.isArray(entry)){
         let entry = [entry]
     }
     return {
         词条 : entry,
         优先级 : level,
-        函数 : action,
+        来源 : source,
+        行为 : movement,
     }
 }
 
-//传入一个效果对象的【行为】与【来源】，将其作用于【目标】
-export function getEffectFrom(target,effect,effect_para,source){
+//传入一个效果对象，将其作用于【目标】
+export function getEffectFrom(target,effect){
     //先完成这个效果对象
-    effect.参数 = effect_para
-    effect.来源 = source
     effect.目标 = target
     //将这个效果对象放进target对象的“效果”中
     if(target.效果 == null){
@@ -57,18 +56,23 @@ export function loseEffect(effect){
 
 //使得一个效果对象起效
 export function runEffect(effect){
-    const target = effect.目标
-    const source = effect.来源
-    const para = effect.参数
-    runObjectFunction(effect,"生效",[target,para,source])
+    const func = effect.行为.生效
+    if(func){
+        const target = effect.目标
+        const source = effect.来源
+        return func(source,target,effect)
+    }
 }
 
 //使得一个效果对象失效
 export function stopEffect(effect){
-    const target = effect.目标
-    const source = effect.来源
-    const para = effect.参数
-    runObjectFunction(effect,"失效",[target,para,source])
+    const func = effect.行为.失效
+    if(func){
+        const target = effect.目标
+        const para = effect.参数
+        const source = effect.来源
+        return func(effect,target,para,source)
+    }
 }
 
 
