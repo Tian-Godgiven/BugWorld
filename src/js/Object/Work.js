@@ -24,8 +24,8 @@ class Work{
 		};
 		this.行为 = {};
 		this.功能 = {
-			"来源" : null,
-			"显示" : true
+			"显示" : true,
+			"选择" : false
 		}
 	}
 }

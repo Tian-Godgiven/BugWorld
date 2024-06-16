@@ -1,10 +1,10 @@
 //信息组件，当点击一个object对象时，创建一个信息框，并显示其中的内容
 import Information_lib from "../library/Information_lib.json"
 
-import { appendLog } from "../Tiles/log";
+import { appendLog } from "../Tiles/logTile";
 import { stateToTileData } from "./tile/tileData";
 import { stateValue } from "../State/State";
-import { abilityTile, upToTop } from "./tile/tile";
+import { abilityTile, createTile, upToTop } from "./tile/tile";
 
 //创建信息栏，一个显示指定信息的tile
 function createInformation(name,inner,object){
@@ -16,15 +16,11 @@ function createInformation(name,inner,object){
 	//否则就创建一个新的information
 	else {
 		//创建一个information tile
-		var tile = $(`
-			<div class="tile information" name=${name}>
-				<div class='tile_name'>${name}</div>
-				<div class='tile_data'></div>
-				<div class="tile_button_container">
-					<div class="information_button button close_btn"></div>
-				</div>
-			</div>`)
-		tile.children(".tile_data").append(inner)
+		const ability = {
+			关闭 : "delete",
+			对象 : object
+		}
+		const tile = createTile(name,inner,ability)
 
 		//在日志栏里加入一项提示信息
 		if(object != undefined){
@@ -37,19 +33,10 @@ function createInformation(name,inner,object){
 			var height = 100 + inner.length + "px"
 			$(tile).css("height",height)
 		}
-		//放进页面中
-		$("#tile_container").append(tile)
-		//赋予功能
-		abilityTile(tile)
-		//显示在最前面
-		upToTop(tile)
+		
 	}
 }
 
-//点击删除键，删除信息栏，而非隐藏
-$(document).on("click",".information_button.close_btn",function(){
-	$(this).parents(".information").remove()
-})
 
 
 

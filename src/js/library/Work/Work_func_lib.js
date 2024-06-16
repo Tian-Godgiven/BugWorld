@@ -1,5 +1,6 @@
 import { haveEntry } from "../../State/Entry"
 import { stateValue } from "../../State/State"
+import { createChooseTile } from "../../Tiles/chooseTile"
 
 export const 产卵 = {
     效果:function(work,object){
@@ -53,5 +54,18 @@ export const 哺育 = {
     },
     效率:function(work,object){
 	    return 1
+    }
+}
+
+export const 修建设施 = {
+    选择:function(work){
+        //
+        const inner = $(`<div></div>`)
+        //创建选择Tile
+        const data = {
+            标题 : "选择设施",
+            内容 : inner
+        }
+        createChooseTile(data)
     }
 }

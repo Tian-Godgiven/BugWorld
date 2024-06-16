@@ -9,9 +9,9 @@ import { bindObjectCharacteristic } from "./Characteristic";
 import { initObject, occupySpace } from "./Object";
 import { createImpact } from "../State/Impact";
 import { runObjectMovement } from "../State/Movement";
-import { appendLog } from "../Tiles/log";
+import { appendLog } from "../Tiles/logTile";
 import { impactToObjectState } from "../State/Impact"
-import { updateBugGroupTile } from "../Tiles/bugGroup";
+import { updateBugGroupTile } from "../Tiles/bugGroupTile";
 
 class Bug {
 	constructor() {

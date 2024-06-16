@@ -36,6 +36,7 @@ export function createFacilityObject(facility_key,num,source,states){
 	}
 	Object.assign(more_states,states)
 	const facility_func = _.cloneDeep(Facility_func_lib[facility_key])
+	//绑定来源，函数，以及额外属性
 	initObject(facility,source,json,facility_func,more_states)
 	
 	return facility

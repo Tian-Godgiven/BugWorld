@@ -1,22 +1,22 @@
 import { objectToDiv } from "../../Modules/objectDiv";
 import { dataTile } from "../../Modules/tile/tile";
-import { stateToDiv } from "../../Modules/tile/tileData";
+import { clearTileData, stateToDiv } from "../../Modules/tile/tileData";
 import { getFreeBug } from "../../Object/Bug";
 import { joinWork, resignWork } from "../../Object/Work";
 import { runObjectMovement } from "../../State/Movement"
-import { getUnit, stateValue } from "../../State/State"
+import { stateValue } from "../../State/State"
 import { countWorkEfficiency } from "../../Object/Work";
-import { updateBugDiv, updateOrderTileBugDiv } from "./order_tile";
+import { updateBugDiv} from "./orderTile";
 
 export function showOrderTileMenu(object,id,type){
     //显示子菜单，清空其中的内容
-    
-	$("#命令_menu").show()
-  	    .clearTileData();
+    const order_menu = $("#命令_menu")
+	order_menu.show()
+    clearTileData(order_menu);
 
     //保存需要使用的数据
     const free_num = getFreeBug(object)
-    $("#命令_menu").data({
+    order_menu.data({
         "object":object,
         "id":id
     }).attr({"free_num": free_num})
@@ -49,15 +49,19 @@ export function showOrderTileMenu(object,id,type){
     }
 
     //将数据在子菜单中显示
-    dataTile("命令_menu",dataDiv)
+    dataTile(order_menu,dataDiv)
 }
 
 //创建命令div
 function createOrderDiv(object,work,free_num,busy_num){
+    // 若事务不被显示
+    if(!work.功能.显示){
+        return false
+    }
+
     // 使用事务的属性创建事务属性div
     const 进度div = stateToDiv(work,"进度",stateValue(work,"进度","object"))
     const 效率值 = countWorkEfficiency(work,object,busy_num,"unit")
-
     const workState = $(`<div></div>`)
         .append(进度div)
         .append(`<div class="state flex">   
@@ -67,18 +71,20 @@ function createOrderDiv(object,work,free_num,busy_num){
                     </div>
                 </div>`)
 
-    //创建这个命令，显示work的名称和部分属性
-    const workDiv = $(`<div class="orderTile_workDiv"></div>`)
+    
+    
+    //创建命令信息div，显示事务的名称和进度，效率
+    const workDiv = $(`<div class="orderDiv_workDiv"></div>`)
         .append(objectToDiv(work),workState)
-    //为其添加一个“命令数量”div,其默认为隐藏
+    //创建命令数量div，用于管理参与命令的对象数量，默认为隐藏
     const numDiv = $(`
-        <div class="orderTile_numDiv">
+        <div class="orderDiv_numDiv">
             <div class="flex">
                 <span>参与数量：</span>
-                <input class="orderTile_input" busy_num="${busy_num}" value="${busy_num}">
-                <div class="orderTile_count">
-                    <div class="orderTile_button orderTile_退出 ${busy_num == 0 ? "disable":""}">-</div>
-                    <div class="orderTile_button orderTile_参加 ${free_num == 0 ? "disable":""} ">+</div>
+                <input class="orderDiv_input" busy_num="${busy_num}" value="${busy_num}">
+                <div class="orderDiv_count">
+                    <div class="orderDiv_button orderDiv_退出 ${busy_num == 0 ? "disable":""}">-</div>
+                    <div class="orderDiv_button orderDiv_参加 ${free_num == 0 ? "disable":""} ">+</div>
                 </div>
             </div>
         </div>
@@ -87,22 +93,31 @@ function createOrderDiv(object,work,free_num,busy_num){
     const orderDiv = $(`<div class="orderTile_orderDiv"></div>`)
         .append(workDiv,numDiv)
         .data("事务",work)
+
+    // 若该事务具备“选择”属性，则创建事务选择div
+    if(work.功能.选择){
+        $(workDiv).append(`<div class="btn orderDiv_选择">选择</div>`)
+        //当前未选择
+        $(orderDiv).prop("选择",false)
+    }
         
     return orderDiv
 }
 
-
+//点击工作Div的[选择]键时，弹出选择Tile
 
 //点击一个工作div时，会在下方显示or隐藏命令数量div
-$("#main").on("click",".orderTile_workDiv",function(){
+$("#main").on("click",".orderDiv_workDiv",function(){
     //显示or隐藏“命令数量”
-    $(this).siblings(".orderTile_numDiv").slideToggle()
+    $(this).siblings(".orderDiv_numDiv").slideToggle()
 })
 
 //命令数量div的功能
 //在input内输入数量以修改参与事务的虫群单位的数量
-    $("#main").on("input",".orderTile_input",function(){
-        const work = $(this).parents('.orderTile_orderDiv').data("事务")
+    $("#main").on("input",".orderDiv_input",function(){
+        
+
+        const work = $(orderDiv).data("事务")
         const object = $(this).parents('#命令_menu').data("object")
         
         const value = parseInt($(this).val())
@@ -143,14 +158,28 @@ $("#main").on("click",".orderTile_workDiv",function(){
         updateBugDiv(object,bugDiv_id)
     })
 
-
+//改变orderDiv_input的值
+function changeOrderDivInput(input,value){
+    const orderDiv = $(input).parents('.orderTile_orderDiv')
+    //若orderDiv未进行选择
+    if($(orderDiv).prop("选择") === false){
+        console.log("请先进行选择")
+        return false
+    }
+    //否则修改Input的值，并触发input事件
+    else{
+        $(input).val(value)
+        input.trigger("input")
+    }
+    
+}
 //点击[+]增加input数量，长按持续增加
-	$("#main").on("mousedown",".orderTile_参加:not(.disable)",function(){
+	$("#main").on("mousedown",".orderDiv_参加:not(.disable)",function(){
 		let interval
         let hover_join_num = 1
         const $this = $(this)
         //input框的输入值
-        const input = $(this).parent().siblings(".orderTile_input")
+        const input = $(this).parent().siblings(".orderDiv_input")
         const value = parseInt($(input).val())
 
 		//长按1秒后，开始计时
@@ -173,9 +202,8 @@ $("#main").on("click",".orderTile_workDiv",function(){
 
 		//松开按键时，令这些bug加入对应的工作
 		$this.on("mouseup",function(){
-			//修改Input框的输入值
-            input.val(value + hover_join_num)
-            input.trigger("input")
+            //修改Input框的输入值
+            changeOrderDivInput(input,value + hover_join_num)
 			//清除计时器
 			clearTimeout(timeOut)
 			clearInterval(interval)
@@ -185,13 +213,13 @@ $("#main").on("click",".orderTile_workDiv",function(){
 	})
 	
 //点击[-]减少input数量，长按持续减少
-    $("#main").on("mousedown",".orderTile_退出:not(.disable)",function(){
+    $("#main").on("mousedown",".orderDiv_退出:not(.disable)",function(){
         let interval
         let hover_resign_num = 1
         const $this = $(this)
 
 		//input框的输入值
-        const input = $(this).parent().siblings(".orderTile_input")
+        const input = $(this).parent().siblings(".orderDiv_input")
         const value = parseInt($(input).val())
 
         //长按1秒后，开始计时
@@ -214,8 +242,7 @@ $("#main").on("click",".orderTile_workDiv",function(){
         //松开按键时，令这些bug加入对应的工作
         $this.on("mouseup",function(){
             //修改Input框的输入值
-            $(input).val(value - hover_resign_num)
-            input.trigger("input")
+            changeOrderDivInput(input,value - hover_resign_num)
             //清除计时器
             clearTimeout(timeOut)
             clearInterval(interval)
@@ -228,7 +255,7 @@ $("#main").on("click",".orderTile_workDiv",function(){
 //更新orderDiv
 $.fn.updateOrderDiv = function (free_num,object){
     //获取数据
-    const input = $(this).find(".orderTile_input")
+    const input = $(this).find(".orderDiv_input")
     const inputValue = parseInt(input.val())
     const max = parseInt(input.attr("busy_num")) + free_num
 
@@ -243,15 +270,15 @@ $.fn.updateOrderDiv = function (free_num,object){
     // 如果输入值等于0，则无法再减少
     const sub = inputValue == 0 ? false:true
 	if(add){
-		$(this).find('.orderTile_参加').removeClass("disable")
+		$(this).find('.orderDiv_参加').removeClass("disable")
 	}else{
-        $(this).find('.orderTile_参加').addClass("disable")
+        $(this).find('.orderDiv_参加').addClass("disable")
 	}
 
 	if(sub){
-		$(this).find('.orderTile_退出').removeClass("disable")
+		$(this).find('.orderDiv_退出').removeClass("disable")
 	}else{
-        $(this).find('.orderTile_退出').addClass("disable")
+        $(this).find('.orderDiv_退出').addClass("disable")
 	}
 }
 //更新orderMenu中的所有orderDiv

@@ -119,8 +119,14 @@ export function runObjectMovement(object, move_key, paras) {
 	}
 
     function runMovementEffect(object,movement_effects,paras){
-        // 按照优先级排列effects中的效果对象,然后遍历其中的效果对象，依次执行其中的“生效”函数
-        const sorted_effects = sortByLevel(movement_effects)
+        // 按照优先级排列effects中的效果对象
+        const array = []
+        for(let i = 0 ; i < movement_effects.length;i++){
+            const effect = movement_effects[i]
+            array.push({对象:effect,优先级:effect.优先级})
+        }
+        // ,然后遍历其中的效果对象，依次执行其中的“生效”函数
+        const sorted_effects = sortByLevel(array)
         //将所有“effect”的返回值保存起来
         let return_value = []
         for(let i = 0 ; i < sorted_effects.length; i++){

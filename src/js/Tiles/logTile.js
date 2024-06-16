@@ -1,11 +1,14 @@
 import { createTile } from "../Modules/tile/tile.js"
 import { objectToDiv } from "../Modules/objectDiv.js"
-import { stateValue } from "../State/State.js"
 import "../../css/components/log.css"
 
 //创建日志栏
 export function createLogTile(){
-	createTile("日志","",["clear"])
+	const ability = {
+		关闭 : "cube",
+		清空 : true
+	}
+	createTile("日志",null,ability)
 }
 
 //向日志中添加信息

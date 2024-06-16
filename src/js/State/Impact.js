@@ -79,14 +79,19 @@ export function loseImapctFrom(object,state_name,source){
 //计算一个影响数组的按照优先级处理的情况下产生的属性值
 export function countImpact(impacts){
     //按照优先级排列impacts数组
-    impacts = sortByLevel(impacts)
+    const array = []
+    for(let i = 0 ; i < impacts.length;i++){
+        const impact = impacts[i]
+        array.push({对象:impact,优先级:impact.优先级})
+    }
+    const sorted_impacts = sortByLevel(array)
     //属性值
     let state_value = ""
     //遍历排序好的影响数组，根据其中的值依次计算最后得到的数值大小
-    for(let i = 0;i < impacts.length;i++){
-        let impact = impacts[i]
+    for(let i = 0;i < sorted_impacts.length;i++){
+        let the_impact = sorted_impacts[i]
         //使用impact中的数值计算对应的属性
-        state_value = countValue(state_value,impact.数值)
+        state_value = countValue(state_value,the_impact.数值)
     }
 
     return state_value

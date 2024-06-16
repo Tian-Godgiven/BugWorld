@@ -4,18 +4,22 @@ import { getFreeBug } from "../../Object/Bug"
 import { stateValue } from "../../State/State"
 
 import "../../../css/components/orderTile.css"
-import { showOrderTileMenu } from "./order_menu"
+import { showOrderTileMenu } from "./orderMenu"
 import { forEach } from "lodash"
 import { countWorkEfficiency } from "../../Object/Work"
 
+let order_tile
 //创建命令Tile
 export function createOrderTile(bugNest){
     //创建一个Tile框体
-	const tile = createTile("命令",bugNest)
+    const ability = {
+		关闭 : "cube",
+		对象 : bugNest
+	}
+	order_tile = createTile("命令",null,ability)
 	//将对应的bugNest的虫群数据更新到tile中
     updateOrderTile(stateValue(bugNest,"虫群"))
-	//创建工作信息栏的子菜单
-	createTileMenu("命令列表",tile)
+	createTileMenu("命令列表",order_tile)
 }
 
 //更新命令Tile，显示其中的虫群对象的工作状态
@@ -32,7 +36,7 @@ export function updateOrderTile(bugGroup){
     //将两个部分分别放入其中
     $(dataDiv).append(freeDiv,busyDiv)
     //将数据填装到命令div中
-    dataTile("命令",dataDiv)
+    dataTile(order_tile,dataDiv)
 
     //遍历虫群对象，找出其中空闲的和占用中的虫群对象,用其更新数据
     for(let bug_name in bugGroup){

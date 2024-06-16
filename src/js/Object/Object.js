@@ -2,7 +2,7 @@ import { stateValue, loadStatesToObject, haveState, popFromState } from "../Stat
 import { expandJsObject } from "../app/global_ability";
 import { initMovement } from "../State/Movement"
 import { createImpact, impactToObjectState } from "../State/Impact";
-import { appendLog } from "../Tiles/log";
+import { appendLog } from "../Tiles/logTile";
 
 //初始化一个对象，加载对应的json属性值至该对象中
 export function initObject(object,source,object_json,object_func,more_states){

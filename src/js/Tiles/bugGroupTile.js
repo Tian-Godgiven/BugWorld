@@ -19,9 +19,12 @@ let bugGroupGridCol = [
 
 //创建一个虫群Tile,以表格形式显示虫巢中的虫群状态
 export function createBugGroupTile(bugNest){
-	const tile = createTile("虫群",bugNest)
-	//将表格对象放入其中
-	$(tile).children(".tile_data").append(`<table id="bugGroupTileGrid"></table>`)
+	const ability = {
+		关闭 : "cube",
+		对象 : bugNest
+	}
+	const inner = $(`<table id="bugGroupTileGrid"></table>`)
+	const tile = createTile("虫群",inner,ability)
 	//使用gridManager构造该表格
 	document.querySelector('#bugGroupTileGrid').GM({
 		gridManagerName: 'bugGroupTileGrid',

@@ -27,18 +27,18 @@ export function findPath(object, state, path = ["属性"]) {
 	}
 }
 
-// 将一个对象数组中的对象，以优先级进行排列先后顺序，并最终返回一个排列好的数组
+// 将一个数组中的{对象,优先级}，以优先级大小进行排列，并最终返回一个排列好的纯对象数组
 export function sortByLevel(array){
 
 	if(array.length == 1){
-		return array
+		return [array[0].对象]
 	}
 
 	let priorityQueues = {}
     // 遍历影响数组，获取以优先级为key的字典，将相同优先级的object放在一起
     for(let i = 0; i < array.length; i++){
-        let object = array[i];
-        let priority = object.优先级;
+        let object = array[i].对象
+        let priority = array[i].优先级
         // 如果优先级队列中不存在当前优先级，就创建一个空数组
         if (!priorityQueues[priority]) {
             priorityQueues[priority] = [];
@@ -66,7 +66,6 @@ export function sortByLevel(array){
         let priority = priorities[i];
         sortedArray = sortedArray.concat(priorityQueues[priority]);
     }
-
 	return sortedArray
 }
 
@@ -113,18 +112,22 @@ export function isCalculableString(string) {
 
 //计算一个初始值受到一个字符串值的影响后的结果,要求其中不得存在百分比
 export function countValue(base, string) {
+    //如果传入的base为空，则直接返回string本身
+	if(!base || base == undefined){
+		return string
+	}
+    //如果传入的string为空，则直接返回base本身
+    if(!string || string == undefined){
+        return base
+    }
 	//如果这个字符串是不可计算的，则将base与string连接起来后返回
 	if(!isCalculableString(string)){
 		return base += string
 	}
 
 	let sign
-	//如果传入的base为空，则直接返回string本身
-	if(!base){
-		return string
-	}
 	//如果传入的base是一个带符号数，则需要先保存其符号，然后计算
-	else if(!_.isNumber(base)){
+	if(!_.isNumber(base)){
 		sign = /([-+*/×÷])/.exec(base)[0]
 		base = parseFloat(base)
 	}

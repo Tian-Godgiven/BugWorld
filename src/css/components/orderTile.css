@@ -28,45 +28,56 @@
     border:2px solid black;
     border-radius:5px;
 }
-.orderTile_workDiv{
+.orderDiv_workDiv{
     display: flex;
     align-items: center;
 }
 
 /* 工作对象的名称 */
-.orderTile_workDiv > div:nth-child(1){
+.orderDiv_workDiv > div:nth-child(1){
     font-size:20px;
     width:30%;
     text-align:center;
     font-weight: bold;
 }
 /* 工作对象的信息 */
-.orderTile_workDiv > div:nth-child(2){
+.orderDiv_workDiv > div:nth-child(2){
     text-align:left;
+}
+/* 工作对象可能存在的选择按键 */
+.orderDiv_选择{
+    border:2px solid black;
+    padding: 2px;
+    border-radius: 3px;
+    margin-left: auto;
+    margin-bottom: auto;
+    position: relative;
+    top:-2px;
+    right: -2px;
 }
 
 /* 命令数量控制div */
-.orderTile_numDiv{
+.orderDiv_numDiv{
     display: none;
     margin-top:5px;
     padding-top: 5px;
     border-top: 1px dashed black;
 }
 
-.orderTile_numDiv > div{
+.orderDiv_numDiv > div{
     display: flex;
     justify-content: center;
 	align-items: center;
 }
 
 /* 数量控制div的按钮外壳 */
-.orderTile_count{
+.orderDiv_count{
     display: flex;
     justify-content: center;
 	align-items: center;
 }
 /* 命令数量控制按钮 */
-.orderTile_button{
+.orderDiv_button{
     font-weight:bold;
     width:20px;
     height:20px;
@@ -78,12 +89,12 @@
     border-radius:3px;
     margin:2px;
 }
-.orderTile_button.disable{
+.orderDiv_button.disable{
     color:white;
     background-color:black;
 }
 /* 命令数量显示和输入 */
-.orderTile_input{
+.orderDiv_input{
     font-size:20px;
     width: 35%;
     border: none;

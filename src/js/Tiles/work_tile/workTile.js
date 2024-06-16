@@ -2,19 +2,21 @@ import { createTile , createTileMenu } from "../../Modules/tile/tile.js"
 import "../../../css/components/work.css"
 import { getUnit } from "../../State/State.js"
 import { stateValue } from "../../State/State.js"
-import { stopWork } from "../../Object/Work.js"
-import { showWorkTileMenu } from "./workTile_menu.js"
+import { showWorkTileMenu } from "./workMenu.js"
 
 //创建[工作]Tile，包含两个menu子元素
 export function createWorkTile(bugNest){
-	//创建一个Tile框体
-	var tile = createTile("工作",bugNest)
 	//其数据栏用于放置"工作div放置栏"和"新增工作键"
-	var data_div = $("<div class='data'>\
-						  <div id='workTile_container'></div>\
-						  <div class='workTile_div flex' id='新增工作'>新增工作</div>\
-					  </div>")
-	$(tile).children('.tile_data').append(data_div)
+	var inner = $("<div class='data'>\
+		<div id='workTile_container'></div>\
+		<div class='workTile_div flex' id='新增工作'>新增工作</div>\
+	</div>")
+	//创建一个Tile框体
+	const ability = {
+		关闭 : "cube",
+		对象 : bugNest
+	}
+	const tile = createTile("工作",inner,ability)
 }
 
 //向[工作]Tile中添加一个工作div
@@ -60,20 +62,6 @@ $("#main").on("click",".work_delete",function(event){
 	deleteWorkTileDiv($(this).parent(".workTile_div"))
 })
 
-//删除工作div
-function deleteWorkTileDiv(work_div){
-	const work = work_div.data("work")
-
-	//如果当前正在显示这个work对象的menu，则令其清空
-	if(work == $("#工作_menu").data("work")){
-		$("#工作_menu .tile_data").empty();
-	}
-
-	//令这个工作从虫巢中结束
-	stopWork(work)
-	//删除这个工作div
-	$(work_div).remove()
-}
 
 //点击一个工作div，弹出工作菜单，并用对应的work更新其中的内容
 $("#main").on("click",".workTile_div",function(){

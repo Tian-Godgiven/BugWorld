@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { objectToDiv } from "../objectDiv";
 import { State, getInformation, getUnit } from "../../State/State";
-import { bugGroupToDiv } from "../../Tiles/bugGroup";
+import { bugGroupToDiv } from "../../Tiles/bugGroupTile";
 
 //将一个对象的【属性】转化为显示在Tile中的tile_data
 export function stateToTileData(object) {
@@ -202,10 +202,10 @@ $.fn.createStateValueInline = function(data, type1) {
 }
 
 //清空一个Tile的data
-$.fn.clearTileData = function(){
-    const $this = $(this)
-    if($this.children(".tile_data").length != 0){
-        $this.children(".tile_data").empty()
+export function clearTileData(tile){
+    const tile_data = $(tile).children(".tile_data")
+    if(tile_data.length != 0){
+        tile_data.empty()
     }
 }
 
