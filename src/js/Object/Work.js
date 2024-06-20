@@ -30,11 +30,19 @@ class Work{
 	}
 }
 
-//获取指定的【工作对象】的信息，用于生成“新增工作”菜单
-export function createWork(work_key,source){
+//创建一个工作对象
+export function createWork(work_key,source,json,func){
 	const work = new Work()
-	const work_json = Work_lib[work_key]
-	const work_func = _.cloneDeep(Work_func_lib[work_key])
+	let work_json,work_func
+	if(work_key){
+		work_json = Work_lib[work_key]
+		work_func = _.cloneDeep(Work_func_lib[work_key])
+	}
+	else {
+		work_json = json
+		work_func = func
+	}
+	
 	//初始化
 	initObject(work,source,work_json.属性,work_func)
 	Object.assign(work.功能 , work_json.功能)
@@ -42,13 +50,14 @@ export function createWork(work_key,source){
 }
 
 //向【虫巢对象】内添加【工作对象】
-export function addWorkToBugNest(bugNest,work_source,work_key){
+export function addWorkToBugNest(work_key,work_source,bugNest){
 	//判断该工作对象是否存在
+	console.log(work_key)
 	if(Work_lib[work_key]){
 		//创建对应的工作对象
 		const work = createWork(work_key,work_source)
 		//保存【工作对象及其来源】到【虫巢对象】内
-		bugNest.工作.push(work)
+		bugNest.已解锁.工作.push(work)
 		//返回work对象
 		return work
 	}
@@ -88,7 +97,7 @@ export function deleteWorkFrom(target,work_source,work){
 export function joinWork(bug,num,work){
 	const bugNest = stateValue(bug,"所属")
 	//若指定的【工作】不属于【虫群对象所在的】【虫巢】,则退出
-	if(!_.some(bugNest.工作,work)){
+	if(!_.some(bugNest.已解锁.工作,work)){
 		console.log("不存在指定工作，虫群对象无法参与！")
 		return false
 	}

@@ -56,7 +56,7 @@ export function sortByLevel(array){
 			if (a == "min") return -1;   // "min" 排在最后面
             if (b == "min") return 1;
             if (!isNaN(a) && !isNaN(b)) {
-                return Number(a) - Number(b); // 数字优先级按大小排序
+                return Number(b) - Number(a); // 数字优先级按大小排序,越大越优先
             }
             return 0; // 其他情况保持原顺序
         })
@@ -170,6 +170,90 @@ export function countValue(base, string) {
 	}
 
 	return base;
+}
+
+//创建一个随机的ID值，内容可能包含数字和大小写字母
+export function createRandomId(lenght){
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var id = '';
+    for (var i = 0; i < lenght; i++) {
+        var randomIndex = Math.floor(Math.random() * characters.length);
+        id += characters[randomIndex];
+    }
+    return id;
+}
+
+//获得一个“相对于目标元素的某个方向的offset位置（left,top)”
+export function getOffsetBeside(target,self,vertical="same_top",horizontal="right"){
+    // 获取目标元素的位置信息
+    const targetPosition = $(target).offset()
+    // 获取目标元素和自身的尺寸信息
+    const targetSize = {
+        width: $(target).outerWidth(),
+        height: $(target).outerHeight()
+    }
+    if(self){
+        const selfSize = {
+            width: $(self).outerWidth(),
+            height: $(self).outerHeight()
+        }
+    }
+    else{
+        if(vertical != "same_top" && vertical != "bottom"){
+            throw new Error("必须添加self元素")
+        }
+        if(horizontal != "same_left" && horizontal != "right"){
+            throw new Error("必须添加self元素")
+        }
+    }
+    
+
+    //即将生成的位置信息
+    let top,left
+
+    // 计算垂直方向的放置点
+    switch (vertical) {
+        case 'top':
+            top = targetPosition.top - selfSize.height;
+            break;
+        case 'bottom':
+            top = targetPosition.top + targetSize.height;
+            break;
+        case 'center':
+            top = targetPosition.top + (targetSize.height / 2) - (selfSize.height / 2);
+            break;
+        case 'same_top':
+            top = targetPosition.top
+            break;
+        case 'same_bottom':
+            top = targetPosition.top - (selfSize.height - targetSize.height)
+            break;
+        default:
+            throw new Error(`Unsupported vertical position: ${vertical}`);
+    }
+
+    // 计算水平方向的放置点
+    switch (horizontal) {
+        case 'left':
+            left = targetPosition.left - selfSize.width;
+            break;
+        case 'right':
+            left = targetPosition.left + targetSize.width;
+            break;
+        case 'center':
+            left = targetPosition.left + (targetSize.width / 2) - (selfSize.width / 2);
+            break;
+        case 'same_left':
+            left = targetPosition.left
+            break;
+        case 'same_right':
+            left = targetPosition.left - (selfSize.left - targetSize.left)
+            break;
+        default:
+            throw new Error(`Unsupported horizontal position: ${horizontal}`);
+    }
+
+    return {top:top,left:left}
 }
 
 

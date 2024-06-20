@@ -2,11 +2,12 @@ import { objectToDiv } from "../../Modules/objectDiv";
 import { dataTile } from "../../Modules/tile/tile";
 import { clearTileData, stateToDiv } from "../../Modules/tile/tileData";
 import { getFreeBug } from "../../Object/Bug";
-import { joinWork, resignWork } from "../../Object/Work";
+import { createWork, joinWork, resignWork } from "../../Object/Work";
 import { runObjectMovement } from "../../State/Movement"
 import { stateValue } from "../../State/State"
 import { countWorkEfficiency } from "../../Object/Work";
 import { updateBugDiv} from "./orderTile";
+import { createRandomId } from "../../app/global_ability";
 
 export function showOrderTileMenu(object,id,type){
     //显示子菜单，清空其中的内容
@@ -16,17 +17,19 @@ export function showOrderTileMenu(object,id,type){
 
     //保存需要使用的数据
     const free_num = getFreeBug(object)
-    order_menu.data({
-        "object":object,
-        "id":id
-    }).attr({"free_num": free_num})
+    order_menu
+        .data({
+            "object":object,
+            "id":id
+        })
+        .attr("free_num", free_num)
 
     const dataDiv = $("<div></div>")
     
     //根据type创建对应的子菜单内容
     if(type == "free"){
         const bugNest = stateValue(object,"所属")
-        const works = bugNest.工作
+        const works = bugNest.已解锁.工作
         //遍历目标所处的虫巢内的工作，显示其可以进行的命令div
         for(let 事务 of works){
             //判断其是否可以进行这个工作
@@ -53,7 +56,7 @@ export function showOrderTileMenu(object,id,type){
 }
 
 //创建命令div
-function createOrderDiv(object,work,free_num,busy_num){
+export function createOrderDiv(object,work,free_num,busy_num){
     // 若事务不被显示
     if(!work.功能.显示){
         return false
@@ -71,8 +74,6 @@ function createOrderDiv(object,work,free_num,busy_num){
                     </div>
                 </div>`)
 
-    
-    
     //创建命令信息div，显示事务的名称和进度，效率
     const workDiv = $(`<div class="orderDiv_workDiv"></div>`)
         .append(objectToDiv(work),workState)
@@ -96,7 +97,14 @@ function createOrderDiv(object,work,free_num,busy_num){
 
     // 若该事务具备“选择”属性，则创建事务选择div
     if(work.功能.选择){
-        $(workDiv).append(`<div class="btn orderDiv_选择">选择</div>`)
+        const 选择div = $(`<div class="btn orderDiv_选择">选择</div>`)
+            .data({
+                "work":work,
+                "object":object
+            })
+        //为其赋予一个随机id,用于部分选择事务
+        选择div.attr("choose_id",createRandomId(8))
+        $(workDiv).append(选择div)
         //当前未选择
         $(orderDiv).prop("选择",false)
     }
@@ -104,7 +112,13 @@ function createOrderDiv(object,work,free_num,busy_num){
     return orderDiv
 }
 
-//点击工作Div的[选择]键时，弹出选择Tile
+//点击工作Div的[选择]键时，执行相应的选择函数
+$("#main").on("click",".orderDiv_选择",function(e){
+    e.stopPropagation()
+    const work = $(this).data("work")
+    const object = $(this).data("object")
+    runObjectMovement(work,"选择",[object,this])
+})
 
 //点击一个工作div时，会在下方显示or隐藏命令数量div
 $("#main").on("click",".orderDiv_workDiv",function(){
@@ -115,9 +129,7 @@ $("#main").on("click",".orderDiv_workDiv",function(){
 //命令数量div的功能
 //在input内输入数量以修改参与事务的虫群单位的数量
     $("#main").on("input",".orderDiv_input",function(){
-        
-
-        const work = $(orderDiv).data("事务")
+        const work = $(this).parents('.orderTile_orderDiv')
         const object = $(this).parents('#命令_menu').data("object")
         
         const value = parseInt($(this).val())

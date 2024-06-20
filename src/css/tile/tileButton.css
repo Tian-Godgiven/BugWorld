@@ -1,5 +1,39 @@
 /* 滑动按钮 */
 .btn_slider{
-    
     display: none;
+}
+
+/* 通用按钮css */
+.button{
+	width:20px;
+	height:20px;
+	margin-left:2px;
+
+	border:2px solid black;
+	border-radius:3px;
+
+	box-sizing: border-box;
+
+	background-position: center;
+  	background-repeat: no-repeat;
+}
+
+.close_btn{
+	background-image: url("../../img/close.png");
+	background-size: 80%;
+}
+
+.clear_btn{
+	background-image: url('../../img/clear.png');
+	background-size: 120%;
+	
+}
+
+/* 通用箭头样式 */
+.arrow_right{
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 10px solid black; /* 修改颜色为你想要的颜色 */
 }

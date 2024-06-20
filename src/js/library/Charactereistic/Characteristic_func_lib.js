@@ -57,7 +57,7 @@ export const 虫母 = function(){
 			const move_effect = {
 				优先级 : 0,
 				效果 : function(object,bugNest){
-					addWorkToBugNest(bugNest,chara,"产卵")
+					addWorkToBugNest("产卵",chara,bugNest)
 				}
 			}
 			addMovementEffect(object, chara,"加入",move_effect)

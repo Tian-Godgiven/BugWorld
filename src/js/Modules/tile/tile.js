@@ -130,7 +130,8 @@ export function closeTile(tile){
 
 //将数据填入指定的tile中,该操作会覆盖原本的数据
 export function dataTile(tile,data){
-	$(tile).children(".tile_data").html(data)
+	const tile_data = $(tile).children(".tile_data")
+	$(tile_data).html(data)
 }
 
 $.fn.changeTileName = function (new_name){
