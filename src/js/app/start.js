@@ -8,10 +8,12 @@ import { createFacilityTile, updateFacilityTile } from '../Tiles/facility_tile/f
 import { createArea } from '../Object/Area.js'
 import { createBug } from '../Object/Bug.js'
 import { bugJoinToBugNest, createBugNest, moveToBugNest } from '../Object/BugNest.js'
-import { addFacilityToBugNest } from "../Object/Facility.js"
-import { addWorkToBugNest, joinWork} from '../Object/Work.js'
+import { createFacility, facilityJoinToBugNest, unlockFacilityBuildWorkToBugNest, unlockFacilityToBugNest } from "../Object/Facility.js"
+import { unlockWorkToBugNest, joinWork, startWork} from '../Object/Work.js'
 import { addAbleFacilityToBugNest, createFacilityObject } from '../Object/Facility.js'
 import { createChooseTile } from '../Tiles/chooseTile.js'
+import { createEventTile } from '../Tiles/event_tile/eventTile.js'
+import { createEvent } from '../Object/Event.js'
 
 
 export function start(){
@@ -29,48 +31,60 @@ export function start(){
 	//为虫巢创建一位虫后，并将她安置入巢
 	let Queen = createBug("虫后",2,"测试")
 	let Worker = createBug("工虫",10,"测试")
-	let Soldier = createBug("兵虫",10,"测试")
-	
-
-	bugJoinToBugNest(Queen,bugNest)
-	bugJoinToBugNest(Worker,bugNest)
 	//重复加入测试
 	let Worker2 = createBug("工虫",10,"测试")
+	let Soldier = createBug("兵虫",10,"测试")
+	
+	bugJoinToBugNest(Queen,bugNest)
+	bugJoinToBugNest(Worker,bugNest)
 	bugJoinToBugNest(Worker2,bugNest)
 	bugJoinToBugNest(Soldier,bugNest)
 	
-
-	//令虫巢可以进行这些工作
-	const find_food = addWorkToBugNest("觅食",bugNest,bugNest)
-	const adventure = addWorkToBugNest("探索",bugNest,bugNest)
-	const feed = addWorkToBugNest("哺育",bugNest,bugNest)
-	const build = addWorkToBugNest("修建设施",bugNest,bugNest)
+	//为虫巢解锁这些工作
+	unlockWorkToBugNest("觅食",bugNest,bugNest)
+	unlockWorkToBugNest("探索",bugNest,bugNest)
+	unlockWorkToBugNest("哺育",bugNest,bugNest)
+	unlockWorkToBugNest("修建设施",bugNest,bugNest)
 
 	//创建工作信息栏
-	// createWorkTile(bugNest)
+	createWorkTile(bugNest)
+
+	//开始这些工作
+	const findFood = startWork(bugNest,"觅食")
+	const adventure1 = startWork(bugNest,"探索")
+	const adventure2 = startWork(bugNest,"探索")
+	const feed = startWork(bugNest,"哺育")
 
 	//测试：安排工虫参与工作
-	joinWork(Worker,5,find_food)
-	joinWork(Worker,2,adventure)
-	joinWork(Soldier,3,adventure)
+	joinWork(Worker,5,findFood)
+	joinWork(Worker,2,adventure1)
+	joinWork(Soldier,3,adventure2)
 	joinWork(Queen,2,feed)
-
-
 
 	//创建命令信息栏
 	createOrderTile(bugNest)
 
 	// 添加可修建设施
-	addFacilityToBugNest("虫母室","测试",bugNest)
-	addFacilityToBugNest("孵化室","测试",bugNest)
+	unlockFacilityToBugNest("虫母室","测试",bugNest)
+	unlockFacilityToBugNest("孵化室","测试",bugNest)
+
+
+	//为虫巢添加一些设施
+	var facility = createFacility("虫母室","测试",1)
+	var facility2 = createFacility("孵化室","测试",1)
+	//令其加入虫巢
+	facilityJoinToBugNest(facility,bugNest)
+	facilityJoinToBugNest(facility2,bugNest)
 
 	// 创建设施信息栏
-	// createFacilityTile(bugNest)
-	// updateFacilityTile(bugNest)
+	createFacilityTile(bugNest)
 
-	// //为虫巢添加一些设施
-	// var facility = createFacilityObject("虫母室",1,"测试")
-	// var facility2 = createFacilityObject("孵化室",1,"测试")
+	//创建一个事件
+	const event1 = createEvent("虫群折损","测试")
+
+	//创建事件信息栏
+	createEventTile(bugNest)
+
 	
 
 	// //创建建设信息栏

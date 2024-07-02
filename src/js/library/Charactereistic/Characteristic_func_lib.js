@@ -1,4 +1,4 @@
-import { addWorkToBugNest, deleteWorkFrom } from "../../Object/Work"
+import { unlockWorkToBugNest, deleteWorkFrom } from "../../Object/Work"
 import { addMovementEffect, deleteMovementEffect } from "../../State/Movement"
 import { haveState , addStateTo , stateValue, pushToState , changeState, deleteStateFrom } from "../../State/State"
 import { getEntry, loseEntry } from "../../State/Entry"
@@ -57,10 +57,10 @@ export const 虫母 = function(){
 			const move_effect = {
 				优先级 : 0,
 				效果 : function(object,bugNest){
-					addWorkToBugNest("产卵",chara,bugNest)
+					unlockWorkToBugNest("产卵",bugNest,chara)
 				}
 			}
-			addMovementEffect(object, chara,"加入",move_effect)
+			addMovementEffect(object,"加入",move_effect, chara, "当时", "new")
 			//令对象获得特殊属性：产卵
 			if(!haveState(object,"产卵")){
 				const value = stateValue(chara,"产卵")

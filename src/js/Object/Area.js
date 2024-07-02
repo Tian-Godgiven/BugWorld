@@ -20,7 +20,7 @@ export function createArea(area_key,source,states){
 	let area_json = _.cloneDeep(Area_lib[area_key])
 	const area_func = null
 	//初始化
-	initObject(area,source,area_json,area_func,states)
+	initObject(area,area_key,source,area_json,area_func,states)
 
 	area["id"]=area_id
 	

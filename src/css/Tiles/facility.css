@@ -1,0 +1,109 @@
+
+.facilityTile_div{
+	position:relative;
+	border-bottom:1px dashed black;
+	padding:5px 0;
+}
+
+.facilityTile_div:first-child{
+	border-top:1px dashed black;
+}
+
+.facilityTile_div .object{
+	font-size:20px;
+}
+
+.facilityTile_div .state{
+	margin:2px 0;
+}
+
+.facilityDiv_btnContainer{
+	position:absolute;
+	top:3px;
+	right:0px;
+
+	display: flex;
+}
+
+.facilityDiv_btnContainer .button{
+	text-align:center;
+
+	min-width:50px;
+	height: auto;
+	margin-right:4px;
+
+	border:2px solid black;
+	border-radius:3px;
+}
+
+/* 设施menu */
+
+.facilityMenu_container .facilityMenu_div:first-child{
+	border-top:1px dashed black;
+}
+
+.facilityMenu_div{
+	position:relative;
+	border-bottom:1px dashed black;
+	padding: 5px 0;
+}
+
+.facilityMenu_div > span{
+	font-size: 20px;
+}
+
+.facilityMenu_btnContainer{
+	display: flex;
+	
+}
+.facilityMenu_btnContainer .button{
+	text-align:center;
+	flex-shrink: 0;
+
+	min-width:50px;
+	height: auto;
+	width: auto;
+	padding: 4px;
+	margin-right:4px;
+
+	border:2px solid black;
+	border-radius:3px;
+}
+
+.facilityMenu_workDiv{
+	position:relative;
+	margin:4px 0px;
+	padding:5px;
+	box-sizing: border-box;
+	width:calc(100% - 8px);
+
+	min-height:55px;
+	border:2px solid black;
+	border-radius:5px;
+
+	display: flex;
+	align-items: center;
+}
+
+.facilityMenu_workDiv .object{
+	width: 30%;
+	text-align:center;
+
+	padding:0px 5px;
+
+	font-size:20px;
+	font-weight: bold;
+}
+
+.facilityMenu_workDiv .button{
+	flex-shrink: 0;
+	width: 45px;
+	height: auto;
+	border:2px solid black;
+	padding: 2px;
+	border-radius: 3px;
+	margin-left: auto;
+	position: relative;
+	top:50%;
+	right: -2px;
+}

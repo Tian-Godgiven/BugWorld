@@ -1,11 +1,11 @@
-import "../../../css/tile/tileButton.css"
+import "../../../css/modules/tile/tileButton.css"
 import { createCube } from "./tile"
 
 //关闭磁贴按键，点击后按设置隐藏或清除其所属的磁贴，并在下方显示一个cube
 $("#main").on("click", ".tile_button.close_btn", function (event) {
 	event.stopPropagation()
     
-    const tile = $(this).parent().parent(".tile")
+    const tile = $(this).parent().parent(".tile , .tile_menu")
     const type = $(this).attr("type")
 
     //隐藏

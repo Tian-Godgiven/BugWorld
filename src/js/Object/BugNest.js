@@ -11,7 +11,7 @@ class BugNest{
 			参数: {},
 			系数: {},
 			虫群: {},
-			设施: [],
+			设施: {},
 			状态: [],
 			特殊: {},
 			特性: [],
@@ -25,7 +25,11 @@ class BugNest{
 		},
 		this.已解锁 = {
 			工作:[],
-			设施:[]
+			设施建造:{}
+		},
+		this.进行中 = {
+			事件:[],
+			工作:[]
 		}
 		this.行为 = {}
 	}
@@ -39,13 +43,13 @@ export function getFocusingBugNest(){
 }
 
 //创建一个指定类型的虫巢对象
-export function createBugNest(bugNest_key,source,states){
+export function createBugNest(bugNest_key,source,more_state){
 	//创建对象
 	var bugNest = new BugNest()
 	//初始化
-	const bugNest_state = BugNest_lib[bugNest_key]
+	const bugNest_json = BugNest_lib[bugNest_key]
 	const bugNest_func = null
-	initObject(bugNest,source,bugNest_state,bugNest_func,states)
+	initObject(bugNest,bugNest_key,source,bugNest_json,bugNest_func,more_state)
 
 	return bugNest
 }

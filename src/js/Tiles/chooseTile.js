@@ -1,7 +1,7 @@
 import { createTile } from "../Modules/tile/tile"
 import { runObjectMovement } from "../State/Movement"
 import { countValue, createRandomId, sortByLevel } from "../app/global_ability"
-import "../../css/components/chooseTile.css"
+import "../../css/Tiles/chooseTile.css"
 import { createBlackScreen, deleteBlackScreen } from "../Modules/screen"
 
 //事件监听

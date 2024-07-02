@@ -165,6 +165,7 @@ export function deleteStateFrom(object,source,state_path){
 }
 
 //获取一个对象的指定【属性名】对应的数值,如果这个值为null则返回"无"
+//如果type为"stateObject"则将得到的属性对象返回
 export function stateValue(object, state_path, type) {
 	if (object == undefined) {
 		throw new Error('该对象不存在')
@@ -181,8 +182,8 @@ export function stateValue(object, state_path, type) {
         return false
     }
 
-    //如果type == “object”则将获得的state对象返回
-    if(type == "object"){
+    //如果type == “stateObject”则将获得的state对象返回
+    if(type == "stateObject"){
         return state
     }
 

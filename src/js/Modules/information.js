@@ -2,7 +2,7 @@
 import Information_lib from "../library/Information_lib.json"
 
 import { appendLog } from "../Tiles/logTile";
-import { stateToTileData } from "./tile/tileData";
+import { objectStateToTileData } from "./tile/tileData";
 import { stateValue } from "../State/State";
 import { abilityTile, createTile, upToTop } from "./tile/tile";
 
@@ -38,11 +38,10 @@ function createInformation(name,inner,object){
 }
 
 
-
-
-//点击一个属性名，显示与其有关的介绍信息
+//点击一个属性div的第一个子Div(即属性名），显示与其有关的介绍信息
 $("#main").on("click",".state > div:first-child",function(event){
 	event.stopPropagation()
+	console.log(this)
 	var state_name = $(this).text().replace("：","")
 	var information = Information_lib[state_name]
 	createInformation(state_name,information)
@@ -51,7 +50,7 @@ $("#main").on("click",".state > div:first-child",function(event){
 //显示与一个对象有关的information
 export function showInformation(object){
 	var name = stateValue(object,"名称")
-	var information = stateToTileData(object)
+	var information = objectStateToTileData(object)
 	createInformation(name,information,object)
 }
 

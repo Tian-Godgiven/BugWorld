@@ -28,7 +28,7 @@ export function createCharacteristic(chara_key,source){
 	const chara_state = Chara_lib[chara_key]
 	const chara_func = Chara_func_lib[chara_key]
 	//初始化
-	initObject(chara,source,chara_state,chara_func)
+	initObject(chara,chara_key,source,chara_state,chara_func)
 
 	return chara
 }

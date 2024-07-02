@@ -19,12 +19,12 @@
 }
 
 .close_btn{
-	background-image: url("../../img/close.png");
+	background-image: url("../../../img/close.png");
 	background-size: 80%;
 }
 
 .clear_btn{
-	background-image: url('../../img/clear.png');
+	background-image: url('../../../img/clear.png');
 	background-size: 120%;
 	
 }

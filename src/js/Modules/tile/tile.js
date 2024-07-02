@@ -4,8 +4,8 @@ import 'jquery-ui/ui/widgets/resizable'
 
 import '../information'
 import './tileButton'
-import "../../../css/tile/tile.css"
-import "../../../css/tile/cube.css"
+import "../../../css/modules/tile/tile.css"
+import "../../../css/modules/tile/cube.css"
 
 //创建一个信息框(tile)
 export function createTile(name,inner,ability){
@@ -28,18 +28,24 @@ export function createTile(name,inner,ability){
 	return tile
 }
 //创建一个信息框菜单(tile_menu)
-export function createTileMenu(name,tile,buttons){
-	const tile_name = $(tile).attr("id")
-	const tile_menu = $(`<div class="tile_menu" id="${tile_name}_menu">
-					 <div class="tile_name">${name}</div>
-					 <div class="tile_data"></div>
-					<div class="tile_button_container">
-						<div class="tile_button button close_btn"></div>
-					</div>
-				  </div>`)
+export function createTileMenu(name,tile,ability = {}){
+	//默认tile_menu不可拖拽
+	if(!ability.拖动){
+		ability.拖动 = false
+	}
+	//默认关闭为“hide”
+	if(!ability.关闭){
+		ability.关闭 = "hide"
+	}
+	
+	const menu_id = $(tile).attr("id") + "_menu"
+	const tile_menu =  createTile(name,null,ability)
+	$(tile_menu)
+		.removeClass("tile")
+		.addClass("tile_menu")
+		.attr("id",menu_id)
 	//放入对应的磁贴中
 	$(tile).append(tile_menu)
-	$(tile_menu).resizable()
 }
 
 //为tile框赋予功能:拖动，调整尺寸，点击移动到最前方
@@ -47,7 +53,8 @@ export function abilityTile(tile,ability){
 	const btn_container = tile.children(".tile_button_container")
 	//关闭按键
 		const 关闭方式 = ability.关闭
-		if(关闭方式){
+		//如果不为false，则获得一个关闭按键
+		if(关闭方式 !== false){
 			const close_btn = $(`<div class="tile_button button close_btn"></div>`)
 				.attr("type",关闭方式)
 			btn_container.prepend(close_btn)
@@ -125,7 +132,6 @@ export function upToTop(tile){
 
 //关闭Tile，触发其关闭函数
 export function closeTile(tile){
-
 }
 
 //将数据填入指定的tile中,该操作会覆盖原本的数据
@@ -134,12 +140,20 @@ export function dataTile(tile,data){
 	$(tile_data).html(data)
 }
 
+//令一个tile[data]重新绑定指定的对象，如果已经绑定了该对象则无事发生
+export function rebindTileData(tile,data_name,data_object){
+	//判断tile[data]中的数据是否相同，如果不相同，则重新绑定
+	if(!$(tile).data(data_name) == data_object){
+		$(tile).data(data_name,data_object)
+		return true
+	}
+}
+
 $.fn.changeTileName = function (new_name){
 	if($(this).is(".tile") || $(this).is(".tile_menu")){
 		$(this).children(".tile_name").text(new_name)
 	}
 }
-
 
 //创建cube，点击cube即可显示对应的磁贴
 export function createCube(tile){

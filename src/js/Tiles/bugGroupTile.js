@@ -2,10 +2,9 @@ import { createTile, dataTile } from "../Modules/tile/tile";
 import { stateValue } from "../State/State";
 import { objectToDiv } from "../Modules/objectDiv";
 import { getSlideDiv } from "../Modules/tile/tileButton";
-import "../../css/components/bugGroup.css"
+import "../../css/Tiles/bugGroup.css"
 import 'gridmanager/index.css';
 import GridManager from 'gridmanager';
-import { template } from "lodash";
 
 let bugGroupGridCol = [
 	{key : "名称", text : "名称"},
@@ -119,36 +118,36 @@ function makeBugGroupGridData(bugGroup){
 }
 
 
-//将一个虫群对象转换为虫群div
-export function bugGroupToDiv(bugGroup){
+//将一个数组对象转换为虫群div
+export function objectArrayToDiv(objectArray){
 	//一个外壳
-	let container = $(`<div class="bugGroup"></div>`)
-	//遍历虫群属性
-	for(let bugName in bugGroup){
-		//获得虫群对象的数组,遍历数组，获得同名虫群单位的总数
-		const bugs = bugGroup[bugName]
+	let container = $(`<div class="objectArray"></div>`)
+	//遍历数组对象属性
+	for(let key in objectArray){
+		//获得对象的数组,遍历数组，获得同名虫群单位的总数
+		const objects = objectArray[key]
 		//如果虫群数组的长度为1，则直接将这个对象的对象div放入容器
-		if(bugs.length == 1){
-			const bug = bugs[0]
-			const bugDiv = objectToDiv(bug,"num")
-			container.append(bugDiv)
+		if(objects.length == 1){
+			const object = objects[0]
+			const objectDiv = objectToDiv(object,"num")
+			container.append(objectDiv)
 		}
 		//否则，遍历虫群数组，制作各个虫群对象的子div,这些子div放置在一个容器中，有一个共同的标题显示其总数，在点击标题时，可以展开或折叠子div
 		else{
 			//获取同名虫群对象的总数，用于之后制作标题div
-			let bugNum_all = 0 
+			let objectNum_all = 0 
 			//虫群子元素的容器
-			const bugInner = $(`<div class='bugGroup_inner'></div>`)
-			for(let bug of bugs){
-				bugNum_all += stateValue(bug,"数量")
-				const bugDiv = objectToDiv(bug,"num")
-				bugInner.append(bugDiv)
+			const objectInner = $(`<div class='objectArray_inner'></div>`)
+			for(let object of objects){
+				objectNum_all += stateValue(object,"数量")
+				const objectDiv = objectToDiv(object,"num")
+				objectInner.append(objectDiv)
 			}
 			//创建一个虫群对象的标题div，显示其总数
-			let bugTitle = $(`<div class="bugGroup_title">${bugName} x ${bugNum_all}</div>`)
+			let objectTitle = $(`<div class="objectArray_title">${key} x ${objectNum_all}</div>`)
 			//将它们变成可滑动的div
-			const bugGroup_div = getSlideDiv(bugTitle,bugInner,"down")
-			container.append(bugGroup_div)
+			const objectArray_div = getSlideDiv(objectTitle,objectInner,"down")
+			container.append(objectArray_div)
 		}
 	}
 	return container

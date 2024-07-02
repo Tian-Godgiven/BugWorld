@@ -1,6 +1,6 @@
 import { createTile } from "../Modules/tile/tile.js"
 import { objectToDiv } from "../Modules/objectDiv.js"
-import "../../css/components/log.css"
+import "../../css/Tiles/log.css"
 
 //创建日志栏
 export function createLogTile(){

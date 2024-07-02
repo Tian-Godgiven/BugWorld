@@ -172,6 +172,42 @@ export function countValue(base, string) {
 	return base;
 }
 
+//将一个带符号的字符串的值取负，+相互变成-，*相互变成/
+export function negativeValue(string) {
+    // 如果传入的string为空，则直接返回false
+    if (!string || string === undefined) {
+        return false;
+    }
+    // 如果这个字符串是不可计算的，则返回false
+    if (!isCalculableString(string)) {
+        return false;
+    }
+    // 如果这个字符串是一个数字，则直接取负并返回
+    if (typeof string == "number"){
+        string = -string
+        return string
+    }
+
+    // 提取数值部分并根据符号进行转换
+    let value = parseFloat(string); // 提取数值部分，例如将 "+12" 提取为 12
+    let result;
+
+    if (string.startsWith('+')) {
+        result = '-' + value.toString(); // 将 + 变为 -
+    } else if (string.startsWith('-')) {
+        result = '+' + value.toString(); // 将 - 变为 +
+    } else if (string.startsWith('*')) {
+        result = '/' + value.toString(); // 将 * 变为 /
+    } else if (string.startsWith('/')) {
+        result = '*' + value.toString(); // 将 / 变为 *
+    } else {
+        // 如果字符串不以 + 或 * 开头，则直接返回原字符串
+        return string;
+    }
+
+    return result;
+}
+
 //创建一个随机的ID值，内容可能包含数字和大小写字母
 export function createRandomId(lenght){
     var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

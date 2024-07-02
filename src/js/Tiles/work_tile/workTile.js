@@ -1,69 +1,94 @@
-import { createTile , createTileMenu } from "../../Modules/tile/tile.js"
-import "../../../css/components/work.css"
-import { getUnit } from "../../State/State.js"
-import { stateValue } from "../../State/State.js"
-import { showWorkTileMenu } from "./workMenu.js"
+import "../../../css/Tiles/workTile.css"
+import { abilityTile, createTile, createTileMenu, rebindTileData } from "../../Modules/tile/tile.js"
+import { getUnit, stateValue } from "../../State/State.js"
+import { startWork, stopWork} from "../../Object/Work.js"
+import { showInformation } from "../../Modules/information.js"
+import { showWorkMenu} from "./workMenu.js"
+import { objectToDiv } from "../../Modules/objectDiv.js"
+import { clearTileData, stateToDiv } from "../../Modules/tile/tileData.js"
 
+let 工作Tile
 //创建[工作]Tile，包含两个menu子元素
 export function createWorkTile(bugNest){
-	//其数据栏用于放置"工作div放置栏"和"新增工作键"
-	var inner = $("<div class='data'>\
-		<div id='workTile_container'></div>\
-		<div class='workTile_div flex' id='新增工作'>新增工作</div>\
-	</div>")
 	//创建一个Tile框体
 	const ability = {
-		关闭 : "cube",
-		对象 : bugNest
+		关闭:"cube",
+		对象:bugNest
 	}
-	const tile = createTile("工作",inner,ability)
+	//其数据栏用于放置"工作div放置栏"和"新增工作键"
+	const inner = $(`<div class='flex' id='workTile_新增工作'>新增工作</div>\
+					 <div id='workTile_container'></div>`)
+	工作Tile = createTile("工作",inner,ability)
+	updateWorkTile()
+
+	//创建工作信息栏的子菜单
+	createTileMenu("新增工作",工作Tile)
+}
+
+//更新“工作Tile”的内容
+export function updateWorkTile(bugNest=null){
+	//清空其中的workTile_container
+	$("#workTile_container").empty()
+	//遍历bugNest[进行中]的事务，添加对应workTileDiv进去
+	if(bugNest){
+		rebindTileData(工作Tile,"object",bugNest)
+	}
+	else{
+		bugNest = $("#工作.tile").data("object")
+	}
+
+	for(let work of bugNest.进行中.工作){
+		appendWorkTileDiv(work)
+	}
 }
 
 //向[工作]Tile中添加一个工作div
 export function appendWorkTileDiv(work){
 	//创建一个workTile_div
 	const workTile_div = createWorkTileDiv(work)
-	//添加到work_container中
-	$("#workTile_container").append(workTile_div)
+	//添加到#workTile_container中
+	$("#workTile_container").prepend(workTile_div)
 }
 
 //创建一个承载【工作对象】信息的div并返回
-function createWorkTileDiv(work){
-	//工作磁贴内，每一个【工作对象】的信息div，以工作对象的名称为id
-	var div = $(`<div class='workTile_div flex' id='${stateValue(work,"名称")}'></div>`)
-	//绑定work对象
-	$(div).data("work",work)
-	//更新其中的内容
-	updateWorkTileDiv(div)
-	// 返回这个div
-	return div
-}
-
-//更新一个work_div当中的内容，将work信息加载进内
-export function updateWorkTileDiv(work_div){
-	const work = $(work_div).data("work")
-	
+export function createWorkTileDiv(work){
+	//工作磁贴内，每一个【工作对象】的信息div,显示对应工作的对象的效率和进度
+	const 进度div = stateToDiv(work,"进度",stateValue(work,"进度","stateObject"))
+	const 效率div = $(`
+		<div class="state">效率：${work.总效率 + getUnit(work,"效率")}</div>`)
+	// 属性div
+	const 属性div = $("<div></div>")
+		.append(进度div,效率div)
 	//依次包含工作对象的名称，进度+效率，对应的按键
-	$(work_div).html(`
-		<div class='object'>
-			<div class='object_name bold'>${名称}</div>
-		</div>
-		<div>
-			<div>${进度}</div>
-			<div>${效率}</div>
-		</div>
-		<div class='button close_btn work_delete'></div>
-	`)
+	const workDiv = $(`<div class='workTile_div flex'></div>`)
+		.append(objectToDiv(work),属性div,
+			`<div class='button close_btn work_delete'></div>`)
+		.data("work",work)
+	// 返回这个div
+	return workDiv
 }
 
-//点击删除键，删除对应的工作Div，令其对应的工作取消
+//点击删除键，令其对应的工作结束
 $("#main").on("click",".work_delete",function(event){
 	event.stopPropagation()
-	deleteWorkTileDiv($(this).parent(".workTile_div"))
+	const work = $(this).parent(".workTile_div").data("work")
+	//令这个工作以“中断”方式结束
+	stopWork(work,"中断")
 })
 
+//删除[data→work]为该工作的workDiv
+export function deleteWorkTileDiv(work){
+	$(工作Tile).find(".workTile_div").each(function(){
+		if($(this).data("work") == work){
+			//删除这个工作div
+			$(this).remove()
+			return true
+		}
+	})
+	return false
+}
 
-//点击一个工作div，弹出工作菜单，并用对应的work更新其中的内容
-$("#main").on("click",".workTile_div",function(){
-	showWorkTileMenu(this)
+//点击新增工作，弹出工作菜单
+$("#main").on("click","#workTile_新增工作",function(){
+	showWorkMenu()
 })

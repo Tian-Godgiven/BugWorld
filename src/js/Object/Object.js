@@ -5,7 +5,7 @@ import { createImpact, impactToObjectState } from "../State/Impact";
 import { appendLog } from "../Tiles/logTile";
 
 //初始化一个对象，加载对应的json属性值至该对象中
-export function initObject(object,source,object_json,object_func,more_states){
+export function initObject(object,object_key,source,object_json,object_func,more_states){
     //将额外属性扩充到object_json当中
     let states = _.cloneDeep(object_json)
     if(more_states){
@@ -13,13 +13,14 @@ export function initObject(object,source,object_json,object_func,more_states){
     }
     // 添加type标识
     object["type"] = "object"
+    // 添加key表示
+    object["key"] = object_key
     // 令对象获得“来源”
     getSource(object,source)
     // 将属性加载到对象当中,这些属性都是“基础”属性，优先级均为“basic”
 	loadStatesToObject(object,"属性",states,"基础","basic")
     // 初始化对象的行为函数
     initMovement(object,object_func)
-    
 }
 
 //另一个对象获得来源

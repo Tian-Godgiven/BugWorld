@@ -1,10 +1,10 @@
 import _ from "lodash";
 import { objectToDiv } from "../objectDiv";
 import { State, getInformation, getUnit } from "../../State/State";
-import { bugGroupToDiv } from "../../Tiles/bugGroupTile";
+import { bugGroupToDiv, objectArrayToDiv } from "../../Tiles/bugGroupTile";
 
-//将一个对象的【属性】转化为显示在Tile中的tile_data
-export function stateToTileData(object) {
+//将一个【对象object】的【属性state】转化为显示在Tile中的tile_data
+export function objectStateToTileData(object) {
     const tile_data = $("<div></div>")
     $(tile_data).appendStateDiv(object,object.属性)
 	return tile_data;
@@ -30,10 +30,10 @@ $.fn.appendStateDiv = function(object,states){
 //属性名-属性值div类型的映射表
 let stateName_to_stateValue_div = {
     虫群 : function(state_value){
-        return bugGroupToDiv(state_value)
+        return objectArrayToDiv(state_value)
     },
     设施 : function(state_value){
-        return createStateValueDiv(state_value,["block","object_num"])
+        return objectArrayToDiv(state_value)
     },
     所属 : function(state_value){
         return createStateValueDiv(state_value,["block","object"])
@@ -103,9 +103,6 @@ export function stateToDiv(object,name,value){
     $(state_div).append(stateName_div, stateValue_div);
     return state_div
 }
-
-
-
 
 // 其中type[0]为结构方式分为
 // 一行一行的：block，全部放在行内的：inline，字典：dic，无：none
@@ -208,4 +205,3 @@ export function clearTileData(tile){
         tile_data.empty()
     }
 }
-

@@ -7,25 +7,23 @@ import { error } from "jquery";
 import _ from "lodash"
 import { bindObjectCharacteristic } from "./Characteristic";
 import { initObject, occupySpace } from "./Object";
-import { createImpact } from "../State/Impact";
 import { runObjectMovement } from "../State/Movement";
 import { appendLog } from "../Tiles/logTile";
-import { impactToObjectState } from "../State/Impact"
-import { updateBugGroupTile } from "../Tiles/bugGroupTile";
+import { updateOrderTile, updateOrderTileBugDiv } from "../Tiles/order_tile/orderTile";
 
 class Bug {
 	constructor() {
 	  	this.属性 = {
 			名称 : null,
 			数量 : null,
-			所属 : null,
 			参数 : {},
 			系数 : {},
 			特殊 : {},
+			状态 : [],
 			特性 : [],
 			词条 : [],
 			信息 : null,
-			状态 : [],
+			所属 : null
 		};
 		this.单位={
 			寿命: "回合",
@@ -37,7 +35,7 @@ class Bug {
 			回复: "生命/回合"
 		};
 		this.行为={};
-		this.占有=[];
+		this.被占有=[];
 	}
 }
 
@@ -60,7 +58,7 @@ export function createBug(bug_key,num,source,states){
 	// 初始化行为
 	const bug_func = _.cloneDeep(Bug_func_lib[bug_key])
 	// 初始化这个对象
-	initObject(bug,source,bug_state,bug_func,more_states)
+	initObject(bug,bug_key,source,bug_state,bug_func,more_states)
 
 	//为【虫群对象】绑定【特性】
 	bindObjectCharacteristic(bug)
@@ -69,42 +67,52 @@ export function createBug(bug_key,num,source,states){
 }
 
 //令虫群对象被一个来源所占有
-// 变量解释：虫群对象，需要的数量，占有来源，占有的标识
 export function occupyBug(bug,need_num,source){
+	const free_num = getFreeBug(bug)
+	//如果占有数量为“剩余”，则占有该对象剩余的所有数量
+	if(need_num == "剩余"){
+		need_num = free_num
+	}
+
 	//占有数量不能大于空闲数量
-	if(need_num > getFreeBug(bug)){
+	if(need_num > free_num){
 		console.log(`空闲的${stateValue(bug,"名称")}数量不足`)
 		return false
 	}
 
 	//判断这个占有源是否存在，如果已经存在，则增加其数量
 	let temp = false
-	for(let 占有对象 of bug.占有){
-		if(source == 占有对象.占有来源){
-			占有对象.占有数量 += need_num
+	for(let i of bug.被占有){
+		if(source == i.占有来源){
+			i.占有数量 += need_num
 			temp = true
 			break;
 		}
 	}
 
-	//否则制作一个占有对象
+	//否则加入占有
 	if(!temp){
 		const occupy = {
 			占有数量:need_num,
 			占有来源:source
 		}
-		//放入占有属性中
-		bug.占有.push(occupy)
+		//放入被占有属性中
+		bug.被占有.push(occupy)
+		//将对象放入占有源的“占有对象”中
+		source.占有.push(bug)
 	}
+
+	//刷新命令Tile中对应对象的bugDiv
+	updateOrderTileBugDiv(bug)
 }
 //解除虫群对象的占用
 export function unoccupyBug(bug,bug_num,source){
 	let occupy
 	let occupy_index 
-	for(let 占有对象 of bug.占有){
-		if(source == 占有对象.占有来源){
-			occupy = 占有对象
-			occupy_index = bug.占有.indexOf(occupy)
+	for(let i of bug.被占有){
+		if(source == i.占有来源){
+			occupy = i
+			occupy_index = bug.被占有.indexOf(occupy)
 			break;
 		}
 	}
@@ -114,35 +122,43 @@ export function unoccupyBug(bug,bug_num,source){
 		throw new error("无法解除对象(1)的占有，对应来源(2)的占有对象在其中不存在")
 	}
 
+	if(bug_num == "all"){
+		bug_num = occupy.占有数量
+	}
+
 	//减少对应的占有数量
 	if(bug_num < occupy.占有数量){
 		occupy.占有数量 -= bug_num
 	}
 	//若减少数量刚好为占有数量，则删除对应的占用对象
 	else if(bug_num == occupy.占有数量){
-		bug.占有.splice(occupy_index,1)
+		bug.被占有.splice(occupy_index,1)
+		const source_index = source.占有.indexOf(bug)
+		source.占有.splice(source_index,1)
 	}
 	else{
-		console.log("解除占用的数量错误！")
+		console.log("解除占用的数量错误！",bug_num)
 		return false
 	}
+	//刷新命令Tile中对应bug的bugDiv
+	updateOrderTileBugDiv(bug)
 }
 //获得一个指定占有对应的占有信息
 export function getOccupyBug(bug,source){
-	for(let 占有对象 of bug.占有){
-		if(source == 占有对象.占有来源){
-			return 占有对象.占有数量
+	for(let i of bug.被占有){
+		if(source == i.占有来源){
+			return i.占有数量
 		}
 	}
 
-	//如果不存在source相同的占有对象，则认定没有被对应来源所占有
+	//如果不存在source的占有来源，则认定没有被对应来源所占有
 	return 0
 }
 //获得一个虫群对象当中未被占有的数量
 export function getFreeBug(bug){
 	let 数量 = stateValue(bug,"数量")
 	//遍历其占有对象，依次减去被占有的数量
-	for( let occupy of bug.占有){
+	for( let occupy of bug.被占有){
 		数量 -= occupy.占有数量
 	}
 	return 数量
@@ -162,15 +178,15 @@ export function bugJoinTo(bug, target, source) {
 
 		//修改虫群单位的所属
 		changeState(bug, "所属", target)
-		//如果对象的“虫群”属性中已有同名的对象，则令其加入
-		const bug_name = stateValue(bug,"名称")
+		//如果对象的“虫群”属性中已有同key的对象，则令其加入
+		const bug_key = bug.key
 		const bugGroup = stateValue(target, "虫群")
-		if(_.has(bugGroup,bug_name)){
-			bugGroup[bug_name].push(bug)
+		if(_.has(bugGroup,bug_key)){
+			bugGroup[bug_key].push(bug)
 		}
 		//否则直接加入"虫群"当中
 		else {
-			bugGroup[bug_name] = [bug]
+			bugGroup[bug_key] = [bug]
 		}
 		
 		//日志输出
@@ -185,8 +201,8 @@ export function bugJoinTo(bug, target, source) {
 }
 //返回对象是否参与了某个事务
 export function haveOccupy(object, source) {
-	//遍历对象的占有
-	for (let occupy of object.占有) {
+	//遍历对象的[被占有]数组
+	for (let occupy of object.被占有) {
 		if (occupy.占有来源 == source) {
 			return true
 		}
