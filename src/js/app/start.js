@@ -5,7 +5,7 @@ import { createWorkTile } from "../Tiles/work_tile/workTile.js"
 import { createOrderTile } from '../Tiles/order_tile/orderTile.js'
 import { createFacilityTile, updateFacilityTile } from '../Tiles/facility_tile/facilityTile.js'
 
-import { createArea } from '../Object/Area.js'
+import { bugNestJoinArea, createArea } from '../Object/Area.js'
 import { createBug } from '../Object/Bug.js'
 import { bugJoinToBugNest, createBugNest, moveToBugNest } from '../Object/BugNest.js'
 import { createFacility, facilityJoinToBugNest, unlockFacilityBuildWorkToBugNest, unlockFacilityToBugNest } from "../Object/Facility.js"
@@ -13,19 +13,21 @@ import { unlockWorkToBugNest, joinWork, startWork} from '../Object/Work.js'
 import { addAbleFacilityToBugNest, createFacilityObject } from '../Object/Facility.js'
 import { createChooseTile } from '../Tiles/chooseTile.js'
 import { createEventTile } from '../Tiles/event_tile/eventTile.js'
-import { createEvent } from '../Object/Event.js'
+import { createEvent, startEvent } from '../Object/Event.js'
 
 
 export function start(){
 	//创建日志栏
 	createLogTile()
 	//创建区域
-	const area = createArea("normal","测试")
+	const area = createArea("平原","测试")
 	//在区域内创建一座虫巢并移动过去
 	let bugNest = createBugNest("genisis-nest","测试")
-	createBugNestTile(bugNest)
+	bugNestJoinArea(bugNest,area)
 	moveToBugNest(bugNest)
-	//创建虫群信息栏
+
+	//创建虫巢和虫群信息栏
+	createBugNestTile(bugNest)
 	createBugGroupTile(bugNest)
 
 	//为虫巢创建一位虫后，并将她安置入巢
@@ -81,6 +83,8 @@ export function start(){
 
 	//创建一个事件
 	const event1 = createEvent("虫群折损","测试")
+	//令其开始
+	startEvent(event1,bugNest,"测试",10)
 
 	//创建事件信息栏
 	createEventTile(bugNest)

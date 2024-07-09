@@ -21,7 +21,6 @@ class Work{
 			信息 : null,
 			所属 : null
 		};
-		this.行为 = {};
 		this.功能 = {
 			"显示" : true,
 			"选择" : false,

@@ -44,8 +44,8 @@ export function addMovement(object, move_key, move_data, move_source, move_belon
 
     //没有找到move_belong指名的位置，则报错
     if(!行为位置){
-        console.log("没有找到move_belong指名的位置："+move_belong)
-        return false
+        console.log(object)
+        throw new Error("没有在该对象的[行为]中找到move_belong指名的位置："+move_belong+move_key)
     }
 
     //在move_key位置创建空位

@@ -164,8 +164,13 @@ export function deleteStateFrom(object,source,state_path){
     }
 }
 
-//获取一个对象的指定【属性名】对应的数值,如果这个值为null则返回"无"
-//如果type为"stateObject"则将得到的属性对象返回
+/**
+ * 根据指定的对象和属性路径获取值，并根据指定的类型进行处理。
+ * @param {*} object 要获取值的对象
+ * @param {*} state_path 属性路径,可以是一个数组，会获取最后一位属性的值
+ * @param {'stateObject' | 'num' | 'symbol'} type 类型：'stateObject' 返回属性对象；'num' 返回纯数字属性值；'symbol' 返回带符号的数字值（仅当值为纯数字时）
+ * @returns 返回根据指定类型处理后的值，如果值为 null 则返回 "无"
+ */
 export function stateValue(object, state_path, type) {
 	if (object == undefined) {
 		throw new Error('该对象不存在')
@@ -206,6 +211,9 @@ export function stateValue(object, state_path, type) {
     else if(type == "symbol" && _.isNumber(value)){
         let symbol = value > 0 ? "+":"-"
         value = symbol + value
+    }
+    else if(type == "num"){
+        value = parseInt(value)
     }
 
     //如果要求传回的是“信息”，则调用“获取信息”函数，将这个值加工一下

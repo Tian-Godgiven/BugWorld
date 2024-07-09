@@ -20,6 +20,7 @@ $.fn.appendStateDiv = function(object,states){
                 continue;
             }
         }
+        
         let value = states[name];
         const state_div = stateToDiv(object,name,value)
         //将属性div填装到引用这个函数的容器中
@@ -34,6 +35,9 @@ let stateName_to_stateValue_div = {
     },
     设施 : function(state_value){
         return objectArrayToDiv(state_value)
+    },
+    所处 : function(state_value){
+        return createStateValueDiv(state_value,["block","object"])
     },
     所属 : function(state_value){
         return createStateValueDiv(state_value,["block","object"])

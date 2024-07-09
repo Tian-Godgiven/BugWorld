@@ -20,6 +20,7 @@ export function initObject(object,object_key,source,object_json,object_func,more
     // 将属性加载到对象当中,这些属性都是“基础”属性，优先级均为“basic”
 	loadStatesToObject(object,"属性",states,"基础","basic")
     // 初始化对象的行为函数
+    object["行为"] = {}
     initMovement(object,object_func)
 }
 
