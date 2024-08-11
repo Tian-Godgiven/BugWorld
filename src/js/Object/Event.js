@@ -5,7 +5,7 @@ import { changeState, stateValue } from "../State/State"
 import { initObject } from "./Object"
 import { appendEventTileDiv } from "../Tiles/event_tile/eventTile.js"
 import { random } from "lodash"
-import { createImpact, impactToObjectState } from "../State/Impact.js"
+import { createImpact, impactToObject } from "../State/Impact.js"
 
 const 事件信息 = {
     发生事件min : 0,
@@ -164,10 +164,10 @@ export function startEvent(event,bugNest,source,eventStrength=0){
         changeState(event,"范围",bugNest)
         event.进行中 = true
         //若事件对象会受事件强度影响，则添加[属性→强度]影响，这个影响的优先级为0
-        if(event.功能.强度 == true){
+        if(event.功能.强度 != false){
             const impact = createImpact(source,eventStrength,0)
             console.log(impact)
-            impactToObjectState(impact,event,"强度")
+            impactToObject(impact,event,"强度")
         }
         //触发事件的“开始”行为
         runObjectMovement(event,"开始",[bugNest,eventStrength])

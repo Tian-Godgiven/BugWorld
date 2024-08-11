@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { objectToDiv } from "../objectDiv";
-import { State, getInformation, getUnit } from "../../State/State";
-import { bugGroupToDiv, objectArrayToDiv } from "../../Tiles/bugGroupTile";
+import { State, getStateUnit } from "../../State/State";
+import { objectArrayToDiv } from "../../Tiles/bugGroupTile";
 
 //将一个【对象object】的【属性state】转化为显示在Tile中的tile_data
 export function objectStateToTileData(object) {
@@ -47,12 +47,6 @@ let stateName_to_stateValue_div = {
     },
     词条 : function(state_value){
         return createStateValueDiv(state_value,["inline","entry"])
-    },
-    来源 : function(state_value){
-        return createStateValueDiv(state_value,["inline","object"])
-    },
-    信息 : function(state_value,object){
-        return $(`<div>${getInformation(object)}</div>`)
     }
 }
 //将属性对象转换为div并返回
@@ -63,6 +57,10 @@ export function stateToDiv(object,name,value){
     if(stateName_to_stateValue_div[name]){
         let stateValue_func = stateName_to_stateValue_div[name]
         stateValue_div = stateValue_func(value,object)
+    }
+    //如果这个值是一个对象
+    else if(value.type == "object"){
+        stateValue_div = createStateValueDiv(value,["inline","object"])
     }
     //在映射表中没有变换函数的情况下，按照数据类型设置type，并通过函数获取对应的属性值div
     else{
@@ -99,7 +97,7 @@ export function stateToDiv(object,name,value){
     //属性名div
     const stateName_div = $(`<div>${name}：</div>`);
     //为属性值添加对应的单位
-    const unit = getUnit(object,name)
+    const unit = getStateUnit(object,name)
     if (unit) {
         $(stateValue_div).append(`<span>${unit}</span>`);
     }

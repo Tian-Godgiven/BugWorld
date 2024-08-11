@@ -1,7 +1,7 @@
 import { createTile, dataTile } from "../Modules/tile/tile";
 import { stateValue } from "../State/State";
 import { objectToDiv } from "../Modules/objectDiv";
-import { getSlideDiv } from "../Modules/tile/tileButton";
+import { bindSlide } from "../Modules/tile/tileButton";
 import "../../css/Tiles/bugGroup.css"
 import 'gridmanager/index.css';
 import GridManager from 'gridmanager';
@@ -145,8 +145,9 @@ export function objectArrayToDiv(objectArray){
 			}
 			//创建一个虫群对象的标题div，显示其总数
 			let objectTitle = $(`<div class="objectArray_title">${key} x ${objectNum_all}</div>`)
-			//将它们变成可滑动的div
-			const objectArray_div = getSlideDiv(objectTitle,objectInner,"down")
+			//将它们绑定滑动控制关系
+			bindSlide(objectTitle,objectInner,"down")
+			const objectArray_div = $("<div></div>").append(objectTitle,objectInner)
 			container.append(objectArray_div)
 		}
 	}

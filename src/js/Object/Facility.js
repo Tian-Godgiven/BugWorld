@@ -2,7 +2,7 @@ import Facility_lib from "../library/Facility/Facility_lib.json"
 import Facility_Work_lib from "../library/Facility/Facility_Work_lib.json"
 import * as Facility_func_lib from "../library/Facility/Facility_func_lib"
 import * as Facility_Work_func_lib from "../library/Facility/Facility_Work_func_lib"
-import { changeState, countState, pushToState, stateValue } from "../State/State"
+import { changeState, stateValue } from "../State/State"
 import { initObject } from "./Object"
 import { runObjectMovement } from "../State/Movement"
 import { updateBugNestTile } from "../Tiles/bugNestTile"
@@ -10,17 +10,18 @@ import { updateFacilityTile } from "../Tiles/facility_tile/facilityTile"
 import { appendLog } from "../Tiles/logTile"
 import { createWork, createWorkWithData, unlockWorkToBugNest } from "./Work"
 import { haveEntry } from "../State/Entry"
-import { createImpact, impactToObjectState } from "../State/Impact"
+import { createImpact, impactToObject } from "../State/Impact"
 
 class Facility{
 	constructor(){
 		this.属性 = {
 			名称 : null,
-			词条 : [],
-			效果 : null,
-			信息 : null,
-			特性 : [],
 			等级 : 0,
+			数量 : 0,
+			效果 : null,
+			特性 : [],
+			词条 : [],
+			信息 : null,
 			所属 : null
 		},
 		this.行为 = {
@@ -203,6 +204,6 @@ export function facilityJoinToBugNest(facility, bugNest) {
 export function addFacilityNum(facility,source,num,level){
 	//添加一个影响至设施对象的数量
 	const impact = createImpact(source,num,level)
-	impactToObjectState(impact,facility,"数量")
+	impactToObject(impact,facility,"数量")
 }
 

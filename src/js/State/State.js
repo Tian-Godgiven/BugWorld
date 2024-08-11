@@ -1,7 +1,8 @@
-import _ from "lodash"
-import { addImpactToObjectState, countImpact, createImpact } from "./Impact"
-import { findPath } from "../app/global_ability"
+import _, { forEach, indexOf } from "lodash"
+import { addImpactToObjectState, countImpact, createImpact, impactToStateObject } from "./Impact"
+import { findPath,getContentBetween } from "../app/global_ability"
 import { error } from "jquery"
+import { objectToDiv } from "../Modules/objectDiv"
 
 export class State{
     constructor(source,unit){
@@ -30,7 +31,7 @@ function createState(source,unit,type){
 export function appendStateObject(object,state_belong,state_name,state_object){
     let the_object
     //如果传入的state_belong是一个数组，则依次读取这样一个数组
-    if(_.isArray(state_belong)){
+    if(_.isArray(state_belong) && state_belong[0] == "属性"){
         //遍历state_belong，找到这个属性应当设置的位置
         let tmp_object = object
         for(let i =0 ; i < state_belong.length; i++){
@@ -66,20 +67,34 @@ export function appendStateObject(object,state_belong,state_name,state_object){
 
 //读取一个json对象states，将其中[属性-值]键值对变为一个对象的属性+影响
 //通常用于加载对象的初始属性，也用于添加新的属性，并不会直接使用
-export function loadStatesToObject(object,state_belong,states,source,level){
-    for(let state_name in states){
-        let state = states[state_name]
+export function loadJsonStatesToObject(object,state_belong,json_states,source,level){
+    //判断加载路径
+    if (_.isArray(state_belong) ? state_belong[0] !== "属性" : state_belong !== "属性") {
+        throw new Error("加载路径必须以“属性”开头");
+    }
+    //依次加载json_states中的数据
+    for(let state_name in json_states){
+        let state = json_states[state_name]
+
         let state_unit = null
-        // 对于添加了单位的属性
+        let state_level = level// 默认使用传入的level作为该属性的优先级
+
+        // 若该属性内部设置了单位
         if(state && state["单位"] != null){
             //将单位添加进这个属性中，并去除掉state中的“单位”
             state_unit = state["单位"]
             delete state["单位"]
-            //如果其中存在数值，将这个数值作为state的值
-            if(state["数值"] !== null || state["数值"] !== undefined){
-                state = states[state_name] = state["数值"]
-            }
         }
+        // 若该属性内部设置了优先级→这个优先级是该属性值的优先级
+        if(state["优先级"] != null){
+            state_level = state["优先级"]
+            delete state["优先级"]
+        }
+        // 属性数值
+        if(state["数值"] != null || state["数值"] != undefined){
+            state = state["数值"]
+        }
+        
         // 如果对应的state是一个数组，则将其视作一个单纯的填装对象的数组
         if(_.isArray(state)){
             const state_inner = state
@@ -100,20 +115,16 @@ export function loadStatesToObject(object,state_belong,states,source,level){
                 new_state_belong = [state_belong,state_name]
             }
             //将这个state字典作为states添加进对象
-            loadStatesToObject(object,new_state_belong,state,source,level)
+            loadJsonStatesToObject(object,new_state_belong,state,source,state_level)
         }
         //如果是键值对类型，则将值作为一个影响，填入属性的影响数组中
         else{
             //先创建state对象，把它添加给对象
             const state_object = createState(source,state_unit)
             appendStateObject(object,state_belong,state_name,state_object)
-            //再通过传入的state的值生成一个Impact对象
-            const value = states[state_name]
-            const impact = createImpact(source,value,level)
-            //将Impact对象添加到这个属性对象
-            state_object.影响.push(impact)
-            //计算这个属性的影响所产生的数值，并填装到属性上
-            state_object.数值 = countImpact(state_object.影响)
+            //再通过传入的state的值生成一个Impact对象并添加给这个属性对象
+            const impact = createImpact(source,state,state_level)
+            impactToStateObject(object,state_object,impact)
         }
     }
 }
@@ -124,7 +135,8 @@ export function loadStatesToObject(object,state_belong,states,source,level){
 //其中:state_path可以是一个数组，但要求其中的路径必须存在在对象内部，state_path内必须包含该属性的名称（key）
 //！→如果存在同名(key)的属性，则会将来源填入进内，随后将state_json当中的“数值”作为影响添加到属性中
 //   此外，要求传入其中的“单位”必须完全相同
-export function addStateTo(object, source, state_path, state_json, level = "basic"){
+export function addStateTo(object, source, state_path, state){
+    //获取state_belong
     let state_belong
 	//如果传入了一个数组，state_belong为state_path第一个元素的路径+state_path剩余的元素
     if(_.isArray(state_path)){
@@ -135,9 +147,46 @@ export function addStateTo(object, source, state_path, state_json, level = "basi
         state_belong = findPath(object,state_path)
     }
 
-    if(state_belong){
+    if(!state_belong){
+        throw new Error("错误的state_path值："+state_path)
+    }
+
+    //产生可读取的json数据
+    const state_json = {}
+    addStateTo_stateToJson(state,state_json)
+
+    function addStateTo_stateToJson(state,state_json){
+        //获取属性名
+        const state_name = state.属性名
+        state_json[state_name] = {}
+
+        //获取数值或子属性
+        if(state.数值 != null){
+            state_json[state_name].数值 = state.数值
+        }
+        else if(state.子属性 != null){
+            //遍历子元素，并将其放置到state_json[state_name]中
+            for(let childState of state.子属性){
+                addStateTo_stateToJson(childState,state_json[state_name])
+            }
+        }
+        else{
+            throw new Error("state必须具备“数值”或“子元素”其一且不为空："+state)
+        }
+        //获取单位
+        if(state.单位 != null){
+            state_json[state_name].单位 = state.单位
+        }
+        //获取优先级，若未设置优先级则默认为basic
+        state_json[state_name].优先级 = (state.优先级 == null ? "basic":state.优先级)
+    }
+    
+    if(state_json != {}){
         //加载对应的state_json到对象当中
-        loadStatesToObject(object,state_belong,state_json,source,level)
+        loadJsonStatesToObject(object,state_belong,state_json,source)
+    }
+    else{
+        throw new Error("错误的state值："+state)
     }
 }
 
@@ -152,15 +201,26 @@ export function deleteStateFrom(object,source,state_path){
     //从the_object中获取目标属性对象
     let state = the_object[state_path]
     if(!state){
-        return false
+        throw new Error("没有在object中找到对应的state_path的位置：/n object:"+object+"/n state_path"+state_path)
     }
-    //将这个state对象的“来源”中==source删除
-    const index = state.来源.indexOf(source)
-    state.来源.splice(index,1)
 
-    //如果在这之后来源为空，则删除这个state
-    if(state.来源.length == 0){
+    //如果source为“all”则直接删除这个state对象
+    if(source == "all"){
         delete the_object[state_path]
+    }
+    else{
+        //将这个state对象的“来源”中==source删除
+        const index = state.来源.indexOf(source)
+        if(index == -1){
+            throw new Error("这个state对象的来源中不包含指定的source：/n state："+state+"/n source："+source)
+        }
+        else{
+            state.来源.splice(index,1)
+            //如果在这之后来源为空，则删除这个state
+            if(state.来源.length == 0){
+                delete the_object[state_path]
+            }
+        }
     }
 }
 
@@ -194,8 +254,8 @@ export function stateValue(object, state_path, type) {
 
     //否则，返回这个state对象的数值
     let value
-    //如果这个state拥有“影响”，则返回其“数值”
-    if(state.影响 != null){
+    //如果这个state拥有“数值”，则返回其“数值”
+    if(state.数值 != null){
         value = state.数值
     }
     //否则返回这个属性的内容
@@ -207,9 +267,9 @@ export function stateValue(object, state_path, type) {
     if (value == undefined) {
         value = "无"
     }
-    //如果type == "symbol"则返回带符号的值,但前提是这个值是一个纯数字
+    //如果type == "symbol",且value是纯数字，则返回带符号的字符串
     else if(type == "symbol" && _.isNumber(value)){
-        let symbol = value > 0 ? "+":"-"
+        let symbol = value > 0 ? "+":""
         value = symbol + value
     }
     else if(type == "num"){
@@ -217,6 +277,7 @@ export function stateValue(object, state_path, type) {
     }
 
     //如果要求传回的是“信息”，则调用“获取信息”函数，将这个值加工一下
+    //待修改：需要更好的方式来加工返回的属性值
     if(state_path == "信息"){
         value = getInformation(object,value)
     }
@@ -225,9 +286,9 @@ export function stateValue(object, state_path, type) {
 }
 
 
-//向一个【目标对象】的【属性对象】中添加一个值
-export function pushToState(target_object,state_path,value){
-    const the_object = findStatePath(target_object, state_path)
+//向一个【目标对象】的【数组属性】中添加一个值
+export function pushToState(object,state_path,value){
+    const the_object = findStatePath(object, state_path)
     //如果传入的state_path是一个数组，则获取最后一位属性
     if(_.isArray(state_path)){
         state_path = _.last(state_path)
@@ -243,8 +304,8 @@ export function pushToState(target_object,state_path,value){
     }
 }
 //将一个【目标对象】的[数组属性]中的指定的值删除并返回，如果不设定value，则删除并返回最后一位的值
-export function popFromState(target_object,state_path,value){
-    const the_object = findStatePath(target_object, state_path)
+export function popFromState(object,state_path,value){
+    const the_object = findStatePath(object, state_path)
     //如果传入的state_path是一个数组，则获取最后一位属性
     if(_.isArray(state_path)){
         state_path = _.last(state_path)
@@ -278,7 +339,7 @@ export function changeState(object, states, value) {
 	//允许传入一个字典，依次进行值的修改
 	if (_.isObject(states)) {
 		for (let state_path in states) {
-			value = states[state]
+			value = states[state_path]
 			changeState_inner(object, state_path, value)
 		}
 	}
@@ -319,7 +380,7 @@ export function haveState(object, state_path) {
     }
     //否则，查找"属性“当中是否存在对应的state_path
     else{
-        state = findPath(object, state)
+        state = findPath(object, state_path)
     }
     
 	//如果最后也没有找到，则返回false，若找到了，则返回true
@@ -332,19 +393,19 @@ export function haveState(object, state_path) {
 }
 
 //获取一个对象的指定属性的单位
-export function getUnit(object, state_name) {
+export function getStateUnit(object, state_path) {
 	//找到这个属性中的单位
 	if (!object) {
 		throw new Error('该对象不存在')
 		return false
 	}
 	//找到指定属性的路径
-	const the_object = findStatePath(object, state_name)
+	const the_object = findStatePath(object, state_path)
 	//如果传入的state_name是一个数组，则获取最后一个属性对象
-    if(_.isArray(state_name)){
-        state_name = _.last(state_name)
+    if(_.isArray(state_path)){
+        state_path = _.last(state_path)
     }
-    const state = the_object[state_name]
+    const state = the_object[state_path]
     //要求对应的属性对象不为空，并且不是一个object
 	if (!state || state.type == "object") {
 		return false
@@ -356,7 +417,7 @@ export function getUnit(object, state_name) {
 	if(!unit) {
 		const units = object.单位
         if (units) {
-			unit = units[state_name]
+			unit = units[state_path]
 		}
 	}
 
@@ -407,36 +468,110 @@ export function findStatePath(object, state_name) {
 	}
 }
 
-//计算一个对象的指定属性加上对应的值后的结果，主要是用于添加“+”“-”符号
-export function countState(object, state, add_value) {
-	//获取指定属性的旧值
-	var old_value = stateValue(object, state);
-	//令指定属性的旧值加上add_value获取新值
-	var new_value = parseInt(old_value) + parseInt(add_value);
-	if (new_value >= 0) {
-		new_value = "+" + new_value;
-	}
-	else if (new_value < 0) {
-		new_value = "-" + Math.abs(new_value);
-	}
-
-	return new_value;
-}
-
 //获取一个对象内部的“信息”,或者传入一个“信息”，将对象的属性传递给其中的变量
 export function getInformation(object,info){
     //传入一个信息的情况
     if(info){
-        // 获取信息中的${}标识，用 object 的属性值替代这些标识
-        const regex = /\${(.*?)}/g; // 匹配 ${} 的正则表达式
-        return info.replace(regex, (match, key) => {
-            const state_path = key.trim()
-            return stateValue(object,state_path); // 用对象属性值替换 ${} 标识
-        });
+        // 获取info中的${}标识，用 object 的属性值替代这些标识
+        const info_div = $(`<span class="flex"></span>`).css({})
+        let lastIndex = 0
+        const info_array = []
+        //遍历这个字符串
+        for(let i = 0 ;i < info.length; i++){
+            //优先匹配￥{...}
+            if(info[i] == "￥" && info[i+1] == "{" && info.indexOf("}", i + 2) !== -1){
+                //获取其中的内容和最后的位置
+                const {content,endIndex} = getContentBetween(info,i+1,"{","}")
+                //将其中的${...}替换为对应的属性值
+                const regex = /\${([^}]*)}/g;
+                const code = content.replace(regex, (match, key) => {
+                    return getDolValue(object, key); // 调用函数获取替换值，并返回给 replace 方法
+                });
+
+                //获取￥{}中的值的执行结果，填装到info_array中
+                const value = getYenValue(object,code)
+                pushToInfoArray(value,"code")
+                //将i移动到￥{}的末尾
+                i = endIndex
+            }
+            //次优先匹配${}
+            else if(info[i] == "$" && info[i+1] == "{" && info.indexOf("}", i + 2) !== -1){
+                //获取其中的值好最后的位置
+                const {content,endIndex} = getContentBetween(info,i+1,"{","}")
+                //获取对应的属性值
+                const value = getDolValue(object, content);
+                let value_type
+                //如果这个值是一个对象，则将其转化为div
+                if(value.type == "object"){
+                    value_type = "object"
+                }
+                else{
+                    value_type = "state"
+                }
+                pushToInfoArray(value,value_type)
+                //将i移动到￥{}的末尾
+                i = endIndex
+            }
+            //如果都不是，则视作字符串，将其添加到数组最末尾类型为text中，若不为text则创建
+            else{
+                //获得数组最末尾
+                const arrayLast = info_array[info_array.length-1]
+                if(arrayLast && arrayLast.type == "text"){
+                
+                        arrayLast.data+=info[i]
+                    
+                }
+                else{
+                    pushToInfoArray(info[i],"text")
+                }
+            }
+        }
+
+        //最后将数组中的内容依次排列到Info_div中
+        for(let i of info_array){
+            let span
+            if(i.type == "object"){
+                span = $("<span></span>").append(objectToDiv(i.data))
+            }
+            else{
+                span = $("<span></span>").append(i.data)
+            }
+
+            //如果不是text，则给予其对应的类型
+            if(i.type != "text"){
+                $(span).addClass("info_"+i.type)
+            }
+            
+            info_div.append(span)
+        }
+        //最后返回info_div
+        return info_div
+
+        function pushToInfoArray(data,type){
+            const info_data = {
+                data:data,
+                type:type
+            }
+            info_array.push(info_data)
+        }
+
+        
     }
     //没有指定info的情况
     else{
         return stateValue(object,"信息")
     }
+}
+
+function getYenValue(object,code){
+    let result = new Function('return ' + code)();
+    return result;
+}
+
+function getDolValue(object,key){
+    //获得${属性名}对应的属性值存储进数组中
+    const state_path = key.trim()
+    let value = stateValue(object,state_path); 
+    return value
 }
 

@@ -4,7 +4,7 @@ import { stateToDiv } from "../../Modules/tile/tileData"
 import { createFacilityWork } from "../../Object/Facility"
 import { startWork, stopWork } from "../../Object/Work"
 import { runObjectMovement } from "../../State/Movement"
-import { getUnit, stateValue } from "../../State/State"
+import { getStateUnit, stateValue } from "../../State/State"
 import Facility_Work_lib from "../../library/Facility/Facility_Work_lib.json"
 import { createAddWorkDiv } from "../work_tile/workMenu"
 
@@ -77,7 +77,7 @@ function createFacilityMenuWorkDiv(work){
 	//判断这个工作是否在进行中,若正在进行
 	if(work.进行中 == true){
 		//属性div：
-		const 效率div = $(`<div class="state">效率：${work.总效率 + getUnit(work,"效率")}</div>`)
+		const 效率div = $(`<div class="state">效率：${work.总效率 + getStateUnit(work,"效率")}</div>`)
 		// 填充属性div
 		属性div.append(效率div,进度div)
 		//“结束工作”按键

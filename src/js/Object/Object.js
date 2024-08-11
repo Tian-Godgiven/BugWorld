@@ -1,7 +1,7 @@
-import { stateValue, loadStatesToObject, haveState, popFromState } from "../State/State";
+import { stateValue, loadJsonStatesToObject, haveState, popFromState } from "../State/State";
 import { expandJsObject } from "../app/global_ability";
 import { initMovement } from "../State/Movement"
-import { createImpact, impactToObjectState } from "../State/Impact";
+import { createImpact, impactToObject } from "../State/Impact";
 import { appendLog } from "../Tiles/logTile";
 
 //初始化一个对象，加载对应的json属性值至该对象中
@@ -18,7 +18,7 @@ export function initObject(object,object_key,source,object_json,object_func,more
     // 令对象获得“来源”
     getSource(object,source)
     // 将属性加载到对象当中,这些属性都是“基础”属性，优先级均为“basic”
-	loadStatesToObject(object,"属性",states,"基础","basic")
+	loadJsonStatesToObject(object,"属性",states,"基础","basic")
     // 初始化对象的行为函数
     object["行为"] = {}
     initMovement(object,object_func)
@@ -71,7 +71,7 @@ export function occupySpace(object, target, level = 0) {
         const occupy_space = stateValue(object, "占据") * stateValue(object, "数量")
         //向【目标对象】的“当前空间”添加对应的影响
         const impact = createImpact(object, occupy_space, level)
-        impactToObjectState(impact, target, ["参数", "空间", "now"])
+        impactToObject(impact, target, ["参数", "空间", "now"])
         return true
     }
     else{

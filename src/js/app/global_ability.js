@@ -292,4 +292,33 @@ export function getOffsetBeside(target,self,vertical="same_top",horizontal="righ
     return {top:top,left:left}
 }
 
+//检索一个字符串内被指定符号括号所包围的内容最外围的内容并返回最外围的结束位置
+export function getContentBetween(string,startIndex,startSymbol,endSymbol){
+    //检索其中含有多少个“{”，并移动到最外层对应的“}”处，已获得￥{}内部的内容
+    let num = 1
+    let endIndex = null
+    for(let j=1;j < string.length-startIndex; j++){
+        //每有一个开始符号num+=1
+        if(string[startIndex+1+j] == startSymbol){
+            num++
+        }
+        //每有一个结束符号num-=1
+        else if(string[startIndex+1+j] == endSymbol){
+            num--
+        }
+        //如果num=0说明此时已经到了最外层的}了，此时的i+1+j就是它的位置
+        if(num == 0){
+            endIndex = startIndex+1+j
+            break
+        }
+    }
+    //如果end为空，则说明没有正确地闭合{}，报错
+    if(!endIndex){
+        throw new Error("这个字符串当中没有正确地闭合指定的括号：" + string +","+startSymbol+endSymbol)
+    }
+    //获取其中的内容
+    const content = string.substring(startIndex+1,endIndex)
+    return {content,endIndex}
+}
+
 

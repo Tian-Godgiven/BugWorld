@@ -1,6 +1,6 @@
 import "../../../css/Tiles/workTile.css"
 import { abilityTile, createTile, createTileMenu, rebindTileData } from "../../Modules/tile/tile.js"
-import { getUnit, stateValue } from "../../State/State.js"
+import { getStateUnit, stateValue } from "../../State/State.js"
 import { startWork, stopWork} from "../../Object/Work.js"
 import { showInformation } from "../../Modules/information.js"
 import { showWorkMenu} from "./workMenu.js"
@@ -55,7 +55,7 @@ export function createWorkTileDiv(work){
 	//工作磁贴内，每一个【工作对象】的信息div,显示对应工作的对象的效率和进度
 	const 进度div = stateToDiv(work,"进度",stateValue(work,"进度","stateObject"))
 	const 效率div = $(`
-		<div class="state">效率：${work.总效率 + getUnit(work,"效率")}</div>`)
+		<div class="state">效率：${work.总效率 + getStateUnit(work,"效率")}</div>`)
 	// 属性div
 	const 属性div = $("<div></div>")
 		.append(进度div,效率div)

@@ -2,7 +2,7 @@ import { unlockWorkToBugNest, deleteWorkFrom } from "../../Object/Work"
 import { addMovementEffect, deleteMovementEffect } from "../../State/Movement"
 import { haveState , addStateTo , stateValue, pushToState , changeState, deleteStateFrom } from "../../State/State"
 import { getEntry, loseEntry } from "../../State/Entry"
-import { createImpact, impactToObjectState, loseImapctFrom } from "../../State/Impact"
+import { createImpact, impactToObject, loseImapctFrom } from "../../State/Impact"
 import { loseCharacteristic, runCharaFunction, runCharacteristic } from "../../Object/Characteristic"
 
 //嗉囊特性的通用行为
@@ -21,7 +21,7 @@ import { loseCharacteristic, runCharaFunction, runCharacteristic } from "../../O
 				if(stateValue(object,"储备")){
 					const value = stateValue(chara,["参数","储备"])
 					const impact = createImpact(chara,value,1)
-					impactToObjectState(impact,object,["储备","max"])
+					impactToObject(impact,object,["储备","max"])
 				}
 				else{
 					console.log("该单位不具备储备属性")
@@ -63,14 +63,12 @@ export const 虫母 = function(){
 			addMovementEffect(object,"加入",move_effect, chara, "当时", "new")
 			//令对象获得特殊属性：产卵
 			if(!haveState(object,"产卵")){
-				const value = stateValue(chara,"产卵")
-				const new_state = {
-					产卵 : {
-						数值 : value,
-						单位 : "卵/回合"
-					}
+				const 产卵属性 = {
+					属性名 : "产卵",
+					数值 : stateValue(chara,"产卵"),
+					单位 : "卵/回合"
 				}
-				addStateTo(object,chara,"特殊",new_state)
+				addStateTo(object,chara,"特殊",产卵属性)
 			}
 		},
 		失效:function(chara,object){

@@ -1,0 +1,20 @@
+.eventTile_container{
+    border-top:2px solid black
+}
+
+
+.eventTile_eventDiv{
+    border:1px solid black;
+    margin-right: 4px;
+    margin-bottom:4px;
+    overflow: hidden;
+}
+
+.eventTile_eventDiv{
+    position: relative;
+}
+.eventDiv_持续时间{
+    position: absolute;
+    top:0px;
+    right:10px;
+}

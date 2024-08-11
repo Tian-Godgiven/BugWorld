@@ -14,6 +14,7 @@ import { addAbleFacilityToBugNest, createFacilityObject } from '../Object/Facili
 import { createChooseTile } from '../Tiles/chooseTile.js'
 import { createEventTile } from '../Tiles/event_tile/eventTile.js'
 import { createEvent, startEvent } from '../Object/Event.js'
+import { random } from 'lodash'
 
 
 export function start(){
@@ -70,7 +71,6 @@ export function start(){
 	unlockFacilityToBugNest("虫母室","测试",bugNest)
 	unlockFacilityToBugNest("孵化室","测试",bugNest)
 
-
 	//为虫巢添加一些设施
 	var facility = createFacility("虫母室","测试",1)
 	var facility2 = createFacility("孵化室","测试",1)
@@ -84,7 +84,8 @@ export function start(){
 	//创建一个事件
 	const event1 = createEvent("虫群折损","测试")
 	//令其开始
-	startEvent(event1,bugNest,"测试",10)
+	const eventpower = random(1,10)
+	startEvent(event1,bugNest,"测试",eventpower)
 
 	//创建事件信息栏
 	createEventTile(bugNest)

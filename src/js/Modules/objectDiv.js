@@ -1,6 +1,8 @@
 import { stateValue } from "../State/State";
 import { showInformation } from "./information";
 
+import "../../css/modules/objectDiv.css"
+
 let class_to_div = {
     Characteristic : function(object){
 		return charaToDiv(object)
@@ -25,7 +27,7 @@ export function objectToDiv(object, method) {
 		object_div = commenToDiv(object)
 	}
 
-	
+	$(object_div).addClass("object")
 
 	// 显示对象的数量
 	if (method == "num") {
@@ -59,7 +61,7 @@ function commenToDiv(object){
 	}
 	//否则制成常规object对象
     let object_div = 
-		$( `<div class='object'>
+		$( `<div>
 			<span class='object_click object_name'>${stateValue(object, "名称")}</span>
 		</div>`);
 	//将对象绑定到object_div上

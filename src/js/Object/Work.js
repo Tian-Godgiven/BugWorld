@@ -1,7 +1,7 @@
 import Work_lib from "../library/Work/Work_lib.json"
 import * as Work_func_lib from "../library/Work/Work_func_lib.js"
 import { runObjectMovement } from "../State/Movement.js"
-import { stateValue, getUnit, changeState } from "../State/State.js"
+import { stateValue, getStateUnit, changeState } from "../State/State.js"
 import { getFreeBug, getOccupyBug, occupyBug, unoccupyBug } from "./Bug.js"
 import { initObject, loseSource } from "./Object.js"
 import { haveOccupy } from "./Bug.js"
@@ -263,7 +263,7 @@ export function countWorkEfficiency(work, object, num, type) {
         }
 
 		if(type == "unit"){
-			const unit = getUnit(work,"效率")
+			const unit = getStateUnit(work,"效率")
 			if(unit){
 				value += unit
 			}

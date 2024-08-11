@@ -1,7 +1,7 @@
 import Bug_lib from "../library/Bug/Bug_lib.json"
 import * as Bug_func_lib from "../library/Bug/Bug_func_lib"
 
-import { addStateTo, stateValue, pushToState } from "../State/State";
+import { stateValue, pushToState } from "../State/State";
 import { changeState } from "../State/State";
 import { error } from "jquery";
 import _ from "lodash"

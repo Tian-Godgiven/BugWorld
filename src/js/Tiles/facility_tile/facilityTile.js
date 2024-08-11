@@ -1,7 +1,7 @@
 import { createTile, createTileMenu, dataTile, rebindTileData } from "../../Modules/tile/tile"
 import { objectToDiv } from "../../Modules/objectDiv";
 import Facility_Work_lib from "../../library/Facility/Facility_Work_lib.json"
-import { getUnit } from "../../State/State"
+import { getStateUnit } from "../../State/State"
 import { stateValue } from "../../State/State"
 import "../../../css/Tiles/facility.css"
 import { clearTileData } from "../../Modules/tile/tileData";

@@ -1,8 +1,9 @@
 import { objectToDiv } from "../../Modules/objectDiv";
 import { createTile, rebindTileData } from "../../Modules/tile/tile";
-import { getUnit, stateValue } from "../../State/State";
+import { getInformation, getStateUnit, stateValue } from "../../State/State";
 
 import "../../../css/Tiles/eventTile.css"
+import { bindSlide } from "../../Modules/tile/tileButton";
 
 let 事件Tile
 //创建事件Tile
@@ -11,24 +12,25 @@ export function createEventTile(bugNest){
         关闭 : "cube",
         对象 : bugNest
     }
-    const tile_inner = $(`
-        <div id="eventTile_eventInfo"></div>
-        <div>
-            <div id="eventTile_预告">
-                <div>预告</div>
-                <div class="eventTile_eventContainer"></div>
-            </div>
-            <div id="eventTile_进行">
-                <div>正在进行</div>
-                <div class="eventTile_eventContainer"></div>
-            </div>
-            <div id="eventTile_留存">
-                <div>留存</div>
-                <div class="eventTile_eventContainer"></div>
-            </div>
-        </div>`)
+
+    const 预告div = createEventTileContainer("预告","预告")
+    const 进行div = createEventTileContainer("进行","正在进行")
+    const 留存div = createEventTileContainer("留存","留存")
+
+    const tile_inner = $(`<div id="eventTile_eventInfo" class="eventTile_container"></div>`)
+        .add($("<div></div>").append(预告div,进行div,留存div))
     事件Tile = createTile("事件",tile_inner,tile_ability)
+
     updateEventTile()
+
+    function createEventTileContainer(id,title){
+        const div = $(`<div id="eventTile_${id}" class="eventTile_container"></div>`)
+        const titleDiv = $(`<div>${title}</div>`)
+        const containerDiv = $(`<div class="eventTile_eventContainer"></div>`)
+        bindSlide(titleDiv,containerDiv,"down",false,500)
+        div.append(titleDiv,containerDiv)
+        return div
+    }
 }
 
 //更新事件Tile的事件信息eventInfo
@@ -53,6 +55,7 @@ export function updateEventInfoDiv(bugNest){
 
     //更新事件信息div
     $("#eventTile_eventInfo").html(`
+        <div>下一回合的事件信息</div>
         <div>事件概率：${事件概率}</div>
         <div>事件倾向：${事件倾向}</div>
         <div>事件强度：${事件强度}</div>
@@ -104,33 +107,23 @@ export function appendEventTileDiv(event){
 }
 
 function createEventTileDiv(event,type){
-    let div
+    let div = $(`<div class="eventTile_eventDiv"></div>`)
     const objectDiv = objectToDiv(event)
-    console.log(event)
-    const 范围对象div = objectToDiv(stateValue(event,"范围"))
-    let 强度div
-    if(event.功能.强度){
-        强度div = $(`<div>事件强度：${stateValue(event,"强度")}</div>`)
-    }
-    else{
-        强度div = $(`<div>事件强度：无影响</div>`)
-    }
-    const 范围div = $(`<div class="flex">影响范围：</div>`).append(范围对象div)
-    const 效果div = $(`<div>${stateValue(event,"效果")}</div>`)
+
+    const 效果 = getInformation(event,stateValue(event,"效果"))
+    const 效果div = $(`<div></div>`).append(效果)
     switch (type){
         case "预告":
-            const 预告div = $(`<div>该事件将在：${stateValue(event,"预告") + getUnit(event,"预告")}后发生</div>`)
-            div = $(`<div class="eventTile_div"></div>`)
-                .append(objectDiv,预告div,强度div,范围div,效果div)
+            const 预告div = $(`<div class="eventDiv_预告时间">${stateValue(event,"预告") + getStateUnit(event,"预告")}后发生</div>`)
+            div.append(objectDiv,预告div,效果div)
             break;
         case "进行":
-            const 持续div = $(`<div>该事件将会持续：${stateValue(event,"持续") + getUnit(event,"持续")}</div>`)
-            div = $(`<div class="eventTile_div"></div>`)
-                .append(objectDiv,持续div,强度div,范围div,效果div)
+            const 持续div = $(`<div class="eventDiv_持续时间">持续${stateValue(event,"持续") + getStateUnit(event,"持续")}</div>`)
+            div.append(objectDiv,持续div,效果div)
             break;
         case "留存":
-            div = $(`<div class="eventTile_div"></div>`)
-                .append(objectToDiv,强度div,范围div,效果div)
+            const 留存div = $(`<div class="eventDiv_留存时间">已经结束</div>`)
+            div.append(objectToDiv,留存div,效果div)
             break;
         default:
             return false
