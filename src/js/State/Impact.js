@@ -1,5 +1,5 @@
-import { countValue, sortByLevel } from "../app/global_ability"
-import { findStatePath } from "./State"
+import { countValue, newError, sortByLevel } from "../app/global_ability"
+import { findState } from "./State"
 
 //创建一个“影响”对象并返回，这个影响对象包含影响源，影响值，影响优先级
 export function createImpact(source,value,level=0){
@@ -20,21 +20,18 @@ export function createImpact(source,value,level=0){
 //为[对象]的指定[属性]产生一个[影响]，并修改该属性的数值
 export function impactToObject(impact,object,state_path){
     if(impact){
-        let the_state
-        //寻找对应的属性对象，如果路径是一个数组，则先找到第0位的属性位置
-        if(_.isArray(state_path)){
-            the_state = findStatePath(object,state_path[0])
-            //然后依次找到数组中的属性位置
-            for(let i of state_path){
-                the_state = the_state[i]
-            }
+        //找到指定的属性对象
+        let state_object = findState(object,state_path)
+        if(state_object){
+            //对其造成影响
+            impactToStateObject(object,state_object,impact)
         }
         else{
-            const the_object = findStatePath(object,state_path)
-            the_state = the_object[state_path]
+            newError("000",[
+                "指定的位置属性对象不存在：",object,state_path
+            ])
         }
-        //对其造成影响
-        impactToStateObject(object,the_state,impact)
+        
     }
 }
 //向属性对象造成影响
@@ -51,30 +48,19 @@ export function impactToStateObject(object,state_object,impact){
 }
 
 //使得【指定目标】中对应[来源]产生的[影响]消失
-export function loseImapctFrom(object,state_name,source){
+export function loseImapctFrom(object,state_path,source){
     if(impact){
         //寻找对应的属性的路径
-        const the_object = findStatePath(object,state_name)
-        let the_state = the_object[state_name]
-        if(state_path){
-            if(_.isArray(state_path)){
-                for( let i of state_path){
-                    the_state = the_state[i]
-                }
-            }
-            else{
-                the_state = the_state[state_path]
-            }
-        }
-        //要求这个state必须拥有“影响”
-        if(the_state.影响 != null){
+        let state_object = findState(object,state_path)
+        //要求这个属性对象必须拥有“影响”
+        if(state_object.影响 != null){
             //将其中the_state.影响数组当中来源为“source”的impact删除
-            the_state.影响 = the_state.影响.filter(impact => impact.来源 !== source);
+            state_object.影响 = state_object.影响.filter(impact => impact.来源 !== source);
             //计算剩余属性的影响所产生的数值，并填装到属性上
-            the_state.数值 = countImpact(the_state.影响)
+            state_object.数值 = countImpact(state_object.影响)
         }
         else{
-            console.log(`${object}的属性${state_name}+${state_path}不具备影响`)
+            console.log(`${object}的属性${state_path}+${state_path}不具备影响`)
         }
     }
 }

@@ -42,7 +42,7 @@ class Event{
             效果:null,
             词条:[],
             信息:null,
-            范围:null
+            范围:[]
         }
         this.功能 = {
             预告:false,
@@ -83,7 +83,7 @@ export function createEvent(key,source){
 //随机发生一个事件
 export function happenEvent(bugNest,source){
     //判定是否会发生事件
-    const area = stateValue(bugNest,"所处")
+    const area = stateValue(bugNest,"所处","stateObject")
     const 概率边界 = parseInt(bugNest.事件信息.概率边界)
     const 繁荣 = stateValue(area,"繁荣","num")
     const random_num = random(事件信息.发生事件min,事件信息.发生事件max+繁荣)

@@ -5,7 +5,7 @@ import { startWork, stopWork} from "../../Object/Work.js"
 import { showInformation } from "../../Modules/information.js"
 import { showWorkMenu} from "./workMenu.js"
 import { objectToDiv } from "../../Modules/objectDiv.js"
-import { clearTileData, stateToDiv } from "../../Modules/tile/tileData.js"
+import { stateToDiv } from "../../Modules/stateDiv"
 
 let 工作Tile
 //创建[工作]Tile，包含两个menu子元素

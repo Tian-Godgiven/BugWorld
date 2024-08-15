@@ -2,7 +2,7 @@
 import Information_lib from "../library/Information_lib.json"
 
 import { appendLog } from "../Tiles/logTile";
-import { objectStateToTileData } from "./tile/tileData";
+import { objectStateToTileData } from "./stateDiv";
 import { stateValue } from "../State/State";
 import { abilityTile, createTile, upToTop } from "./tile/tile";
 

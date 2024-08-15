@@ -1,6 +1,6 @@
 import { objectToDiv } from "../../Modules/objectDiv"
+import { stateToDiv } from "../../Modules/stateDiv"
 import { dataTile } from "../../Modules/tile/tile"
-import { stateToDiv } from "../../Modules/tile/tileData"
 import { createFacilityWork } from "../../Object/Facility"
 import { startWork, stopWork } from "../../Object/Work"
 import { runObjectMovement } from "../../State/Movement"

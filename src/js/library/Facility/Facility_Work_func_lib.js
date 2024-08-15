@@ -29,7 +29,6 @@ export const 虫母室 = {
                 //增加该工作的当前进度，增加量等同于工作效率
                 var old_progress = stateValue(work,"当前进度")
                 var effeciency = stateValue(work,"效率")
-                changeState(work,"当前进度",old_progress + effeciency)
             },
             效果 : function(work,bugNest){
                 //令该工作所属的虫巢的虫母室等级+1，令虫巢对象强度+1
@@ -65,7 +64,6 @@ export const 虫母室 = {
             //增加该工作的当前进度，增加量等同于工作效率
             var old_progress = stateValue(work,"当前进度")
             var effeciency = stateValue(work,"效率")
-            changeState(work,"当前进度",old_progress + effeciency)
         },
         效果 : function(work,bugNest){
             //令虫巢失去这座虫母室
@@ -104,7 +102,6 @@ export const 孵化室 = {
             //增加该工作的当前进度，增加量等同于工作效率
             var old_progress = stateValue(work,"当前进度")
             var effeciency = stateValue(work,"效率")
-            changeState(work,"当前进度",old_progress + effeciency)
         },
         效果 : function(work,bugNest){
             //令虫巢失去这座孵化室

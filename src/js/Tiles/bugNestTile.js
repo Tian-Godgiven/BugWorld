@@ -1,5 +1,6 @@
+import { objectStateToTileData } from "../Modules/stateDiv"
 import { createTile, dataTile } from "../Modules/tile/tile"
-import { objectStateToTileData } from "../Modules/tile/tileData"
+
 // 创建一个虫巢Tile并将对应的数据装入其中
 let bugNest_tile
 export function createBugNestTile(bugNest){

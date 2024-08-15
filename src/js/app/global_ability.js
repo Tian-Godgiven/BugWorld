@@ -1,31 +1,6 @@
 import _, { toNumber } from "lodash"
+import { State } from "../State/State";
 
-//通过递归获得找到属性的路径,若没有找到则返回false
-export function findPath(object, state, path = ["属性"]) {
-	//我们要求从object的属性开始寻找
-	if(object.属性){
-		object = object.属性
-	}
-	
-	//遍历其中的key
-	for (var key in object) {
-		//找到了等于state的key时，返回包含了state的路径
-		if (key == state) {
-			return path.concat(state);
-		}
-		//否则，若key的属性是一个字典,且不是一个object
-		else if (_.isObject(object[key])) {
-			if(object[key].type != "object"){
-				//递归调用key对应的属性
-				var result = findPath(object[key], state, path.concat(key));
-				//如果返回了一个path，则将这个path递归返回
-				if (result) {
-					return result;
-				}
-			}
-		}
-	}
-}
 
 // 将一个数组中的{对象,优先级}，以优先级大小进行排列，并最终返回一个排列好的纯对象数组
 export function sortByLevel(array){
@@ -70,31 +45,25 @@ export function sortByLevel(array){
 }
 
 //扩充一个js对象，使其添加并修改另一个js对象中的数据
-export function expandJsObject(js,more_js){
-    template(js,more_js)
-    return js
-
-    function template(the_state,find_state,state_name){
-		//如果the_state中没有这个属性名，那就临时添加一下，之后会修改的
-		if(state_name != null && the_state[state_name] == null){
-			the_state[state_name] = find_state
-		}
-		
-        if(_.isObject(find_state)){
-			if(state_name != null){
-				//如果值是一个字典，则令the_state向state_name加深一层
-				the_state = the_state[state_name]
-			}
-            for(let name in find_state){
-                let value = find_state[name]
-                template(the_state,value,name)
+export function expandJsObject(target,more){
+    //遍历more里的键
+    for(const key in more){
+        const value = more[key]
+        //如果这个值是字典，则递归进入
+        if(_.isObject(value) && !_.isArray(value) && value != null){
+            //如果此时target内部不是字典，则令其为字典
+            if(!target[key]){
+                target[key] = {}
             }
+            //递归进入
+            expandJsObject(target[key],value)
         }
-        //否则将这个find_state放入the_state中
+        //如果不是字典，则令其获得相同的值
         else{
-            the_state[state_name] = find_state
+            target[key] = value
         }
     }
+    return target
 }
 
 //判断一个字符串是否是可计算的
@@ -321,4 +290,9 @@ export function getContentBetween(string,startIndex,startSymbol,endSymbol){
     return {content,endIndex}
 }
 
-
+//报错
+export function newError(error_code, error_text_parts) {
+    // 拼接所有文本部分
+    console.error(...error_text_parts);
+    throw new Error("错误代码：" + error_code);
+}

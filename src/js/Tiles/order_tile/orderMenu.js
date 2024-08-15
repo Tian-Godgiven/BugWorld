@@ -1,6 +1,6 @@
 import { objectToDiv } from "../../Modules/objectDiv";
 import { dataTile } from "../../Modules/tile/tile";
-import { clearTileData, stateToDiv } from "../../Modules/tile/tileData";
+import { clearTileData } from "../../Modules/tile/tileData";
 import { getFreeBug } from "../../Object/Bug";
 import { createWork, joinWork, resignWork } from "../../Object/Work";
 import { runObjectMovement } from "../../State/Movement"
@@ -8,6 +8,7 @@ import { stateValue } from "../../State/State"
 import { countWorkEfficiency } from "../../Object/Work";
 import { updateOrderTileBugDiv} from "./orderTile";
 import { createRandomId } from "../../app/global_ability";
+import { stateToDiv } from "../../Modules/stateDiv"
 
 //显示命令菜单
 export function showOrderTileMenu(object,type){

@@ -1,6 +1,6 @@
 import { unlockWorkToBugNest, deleteWorkFrom } from "../../Object/Work"
 import { addMovementEffect, deleteMovementEffect } from "../../State/Movement"
-import { haveState , addStateTo , stateValue, pushToState , changeState, deleteStateFrom } from "../../State/State"
+import { haveState , addStateTo , stateValue, pushToState , deleteStateFrom } from "../../State/State"
 import { getEntry, loseEntry } from "../../State/Entry"
 import { createImpact, impactToObject, loseImapctFrom } from "../../State/Impact"
 import { loseCharacteristic, runCharaFunction, runCharacteristic } from "../../Object/Characteristic"
@@ -18,7 +18,7 @@ import { loseCharacteristic, runCharaFunction, runCharacteristic } from "../../O
 			},
 			//令对象的"储备max"添加对应参数的影响
 			生效 : function(chara,object){
-				if(stateValue(object,"储备")){
+				if(haveState(object,"储备")){
 					const value = stateValue(chara,["参数","储备"])
 					const impact = createImpact(chara,value,1)
 					impactToObject(impact,object,["储备","max"])

@@ -24,6 +24,7 @@ export function start(){
 	const area = createArea("平原","测试")
 	//在区域内创建一座虫巢并移动过去
 	let bugNest = createBugNest("genisis-nest","测试")
+	console.log(bugNest)
 	bugNestJoinArea(bugNest,area)
 	moveToBugNest(bugNest)
 
@@ -54,6 +55,7 @@ export function start(){
 
 	//开始这些工作
 	const findFood = startWork(bugNest,"觅食")
+	console.log(findFood)
 	const adventure1 = startWork(bugNest,"探索")
 	const adventure2 = startWork(bugNest,"探索")
 	const feed = startWork(bugNest,"哺育")

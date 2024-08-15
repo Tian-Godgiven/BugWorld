@@ -11,12 +11,12 @@ class Characteristic{
 	constructor(){
 		this.属性 = {
 			名称 : null,
-			参数 : null,
+			参数 : {},
             词条 : [],
 			优先级 : null,
             信息 : null,
-            所属 : null,
-			来源 : null
+            所属 : [],
+			来源 : []
 		}
 		this.行为 = {}
 	}
@@ -51,7 +51,7 @@ export function bindObjectCharacteristic(object,source){
 //令一个对象获得指定chara_key的特性对象,并触发其“获得”行为
 export function getCharacteristic(object,chara){	
 	//修改【特性对象】的“所属”
-	chara.属性.所属 = object
+	changeState(chara,"所属",object)
 	//将特性对象加入指定对象的“特性”属性当中
 	pushToState(object,"特性",chara)
 	//触发【特性对象】的获得行为

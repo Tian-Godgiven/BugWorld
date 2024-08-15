@@ -1,4 +1,4 @@
-import { popFromState, pushToState } from "./State";
+import { popFromState, pushToState, stateValue } from "./State";
 
 //使得对象获得词条
 export function getEntry(object,entry){
@@ -7,7 +7,7 @@ export function getEntry(object,entry){
 //返回对象是否具有某个/某些词条,传入多个参数将以“或”的方式寻找到最前的符合的词条/词条组
 export function haveEntry(object, ...entrys) {
 	let bool = false
-	const 词条 = object.属性.词条
+	const 词条 = stateValue(object,"词条")
 	//按照传入的词条组的顺序进行判断
 	for(let entry of entrys){
 		//如果entry是一个数组，则要求对象具备其中的所有词条

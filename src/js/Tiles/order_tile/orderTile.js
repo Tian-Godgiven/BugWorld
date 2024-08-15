@@ -118,14 +118,14 @@ export function updateOrderTileBugDiv(object){
         for(let occupy of object.被占有){
             const source = occupy.占有来源
             const num = occupy.占有数量
-            const efficiency = countWorkEfficiency(source,object,num,"unit")
+            const 效率 = countWorkEfficiency(source,object,num,"unit")
             //显示占有数量和占有来源以及当前事务的效率
             const occupyDiv = $(`
                 <div class="flex">
                     <span>&nbsp;${"x " + num + " →"}&nbsp;</span>
                 </div>`)
             .append(objectToDiv(source))
-            .append(`<span>：${efficiency}</span>`)
+            .append(`<span>：${效率}</span>`)
             $(container).append(occupyDiv)
         }
         const bugDiv = objectToDiv(object)

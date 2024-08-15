@@ -14,12 +14,12 @@ class Work{
 		this.属性 = {
 			名称 : null,
 			需求 : null,
-			消耗 : null,
+			消耗 : 0,
 			进度 : null,
 			效率 : 0,
 			词条 : [],
 			信息 : null,
-			所属 : null
+			所属 : []
 		};
 		this.功能 = {
 			"显示" : true,

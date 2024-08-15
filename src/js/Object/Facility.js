@@ -16,13 +16,13 @@ class Facility{
 	constructor(){
 		this.属性 = {
 			名称 : null,
-			等级 : 0,
+			等级 : null,
 			数量 : 0,
 			效果 : null,
 			特性 : [],
 			词条 : [],
 			信息 : null,
-			所属 : null
+			所属 : []
 		},
 		this.行为 = {
 			获得 : null,
