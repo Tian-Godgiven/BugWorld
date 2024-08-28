@@ -6,6 +6,7 @@ import { showInformation } from "../../Modules/information.js"
 import { showWorkMenu} from "./workMenu.js"
 import { objectToDiv } from "../../Modules/objectDiv.js"
 import { stateToDiv } from "../../Modules/stateDiv"
+import { hiddenValue } from "../../State/Hidden.js"
 
 let 工作Tile
 //创建[工作]Tile，包含两个menu子元素
@@ -37,8 +38,9 @@ export function updateWorkTile(bugNest=null){
 		bugNest = $("#工作.tile").data("object")
 	}
 
-	for(let work of bugNest.进行中.工作){
-		appendWorkTileDiv(work)
+	const 进行中工作 = hiddenValue(bugNest,["进行中","工作"])
+	for(let 工作 of 进行中工作){
+		appendWorkTileDiv(工作)
 	}
 }
 
@@ -55,7 +57,7 @@ export function createWorkTileDiv(work){
 	//工作磁贴内，每一个【工作对象】的信息div,显示对应工作的对象的效率和进度
 	const 进度div = stateToDiv(work,"进度",stateValue(work,"进度","stateObject"))
 	const 效率div = $(`
-		<div class="state">效率：${work.总效率 + getStateUnit(work,"效率")}</div>`)
+		<div class="state">效率：${hiddenValue(work,"总效率") + getStateUnit(work,"效率")}</div>`)
 	// 属性div
 	const 属性div = $("<div></div>")
 		.append(进度div,效率div)

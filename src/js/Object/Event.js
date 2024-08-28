@@ -6,8 +6,9 @@ import { initObject } from "./Object"
 import { appendEventTileDiv } from "../Tiles/event_tile/eventTile.js"
 import { random } from "lodash"
 import { createImpact, impactToObject } from "../State/Impact.js"
+import { hiddenValue, setHidden } from "../State/Hidden.js"
 
-const 事件信息 = {
+const 初始事件信息 = {
     发生事件min : 0,
     发生事件max : 100,
     好事max : 5,
@@ -50,7 +51,9 @@ class Event{
             强度:false,
             操作:false
         }
-        this.进行中 = false
+        this.隐藏 = {
+            进行中 : false
+        }
         this.单位 = {
             持续:"回合",
             预告:"回合"
@@ -83,60 +86,65 @@ export function createEvent(key,source){
 //随机发生一个事件
 export function happenEvent(bugNest,source){
     //判定是否会发生事件
-    const area = stateValue(bugNest,"所处","stateObject")
-    const 概率边界 = parseInt(bugNest.事件信息.概率边界)
+    const area = stateValue(bugNest,"所处")
     const 繁荣 = stateValue(area,"繁荣","num")
-    const random_num = random(事件信息.发生事件min,事件信息.发生事件max+繁荣)
-    // 如果随机值大于bugNest[事件信息→概率]则发生一个事件
-    if(random_num > 概率边界){
+
+    const 事件信息 = hiddenValue(bugNest,["事件信息"])
+    
+    const random_num = random(初始事件信息.发生事件min,初始事件信息.发生事件max+繁荣)
+    // 如果随机值大于bugNest[功能→事件信息→概率]则发生一个事件
+    if(random_num > 事件信息.概率边界){
         //发生一个事件，随机生成该事件的倾向
         let 倾向 = 0;
-        const 好事 = stateValue(area,"平和","num") + 事件信息.好事max
-        const 坏事 = stateValue(area,"威胁","num") + 事件信息.坏事max
+        const 好事 = stateValue(area,"平和","num") + 初始事件信息.好事max
+        const 坏事 = stateValue(area,"威胁","num") + 初始事件信息.坏事max
         //这个倾向不能为0
         while (倾向 === 0) {
             倾向 = random(-坏事,好事)
         }
         //判断其是一个好事或坏事,并获取事件强度
-        const 倾向边界 = bugNest.事件信息.倾向边界
         let 强度 = 0
         //是好事
-        if(倾向>=倾向边界){
+        if(倾向 >= 事件信息.倾向边界){
             //生成好事的强度
             强度 = random(
-                事件信息.强度min+stateValue(area,"收益","num"),
-                事件信息.强度max+stateValue(area,"收益","num")
+                初始事件信息.强度min+stateValue(area,"收益","num"),
+                初始事件信息.强度max+stateValue(area,"收益","num")
             )
         }
         //否则是坏事
         else{
             强度 = random(
-                事件信息.强度min+stateValue(area,"险恶","num"),
-                事件信息.强度max+stateValue(area,"险恶","num")
+                初始事件信息.强度min+stateValue(area,"险恶","num"),
+                初始事件信息.强度max+stateValue(area,"险恶","num")
             )
         }
 
         // 从事件库中获取对应倾向的事件
+        倾向 = -4//注意测试：记得删除本行！
         const events =  _.cloneDeep(Event_tendency_lib[倾向])
         let event = null;
         let tmp = false
-        while (events.length > 0 && !tmp) {
+        while (events && events.length > 0 && !tmp) {
             // 随机选择一个事件
             const random_index = random(0, events.length - 1);
             const event_key = events[random_index];
             event = createEvent(event_key, source);
             // 尝试开始事件，如果成功则处理bugNest的事件信息，并返回true
             if (startEvent(event, bugNest, source, 强度)) {
+                console.log("123")
                 //因为成功开始了一个事件，令概率边界变大→下一次更难发生事件
-                bugNest.事件信息.概率边界 += 事件信息.概率边界add
+                事件信息.概率边界 += 初始事件信息.概率边界add
                 //若该事件为好事，则概率边界增大→下一次更容易发生坏事
-                if(倾向 >= 倾向边界){
-                    bugNest.事件信息.倾向边界 += 事件信息.倾向边界add
+                if(倾向 >= 事件信息.倾向边界){
+                    事件信息.倾向边界 += 初始事件信息.倾向边界add
                 }
                 //否则该事件为坏事，概率边界减小→下一次更容易发生好事
                 else{
-                    bugNest.事件信息.倾向边界 -= 事件信息.倾向边界add
+                    事件信息.倾向边界 -= 初始事件信息.倾向边界add
                 }
+
+                console.log(事件信息.概率边界,bugNest)
                 
                 return true
             } 
@@ -159,21 +167,25 @@ export function happenEvent(bugNest,source){
 export function startEvent(event,bugNest,source,eventStrength=0){
     //判断是否满足该事件对象的开始条件
     if(runObjectMovement(event,"开始需求",bugNest)){
-        //使得这个事件开始进行，记录在虫巢[进行中→事件]
-        bugNest.进行中.事件.push(event)
+        //记录在虫巢[进行中→事件]，并修改事件的作用范围
+        const 进行中事件 = hiddenValue(bugNest,["进行中","事件"])
+        进行中事件.push(event)
         changeState(event,"范围",bugNest)
-        event.进行中 = true
+        //修改事件为正在进行
+        setHidden(event,"进行中",true)
         //若事件对象会受事件强度影响，则添加[属性→强度]影响，这个影响的优先级为0
         if(event.功能.强度 != false){
             const impact = createImpact(source,eventStrength,0)
-            console.log(impact)
             impactToObject(impact,event,"强度")
         }
+
         //触发事件的“开始”行为
         runObjectMovement(event,"开始",[bugNest,eventStrength])
         
-        //添加一个事件Tile的div
+        //向事件Tile添加该事件的信息div
         appendEventTileDiv(event)
+
+        return true
     }
     //否则返回false
     else{

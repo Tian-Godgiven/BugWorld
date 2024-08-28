@@ -7,6 +7,7 @@ import "../../../css/Tiles/orderTile.css"
 import { showOrderTileMenu } from "./orderMenu"
 import { forEach } from "lodash"
 import { countWorkEfficiency } from "../../Object/Work"
+import { hiddenValue } from "../../State/Hidden"
 
 let order_tile
 //创建命令Tile
@@ -47,9 +48,10 @@ export function updateOrderTile(bugGroup){
 //点击两种不同的bugDiv，会对应显示不同的子菜单
 $("#main").on("click", ".orderTile_bugDiv", function(){
     const object = $(this).data("object");
+    const bugNest = $(order_tile).data("object")
     const type = $(this).hasClass("orderTile_freeBug") ? "free" : "busy";
     //显示子菜单
-    showOrderTileMenu(object, type);
+    showOrderTileMenu(object, bugNest, type);
     
     // 聚焦当前bugDiv
     $("#命令 .focusing").removeClass("focusing");
@@ -115,7 +117,8 @@ export function updateOrderTileBugDiv(object){
         
         //遍历虫群对象的占有属性，获得其当前的占用情况，并更新BusyBug
         const container = $("<div></div>")
-        for(let occupy of object.被占有){
+        const 被占有 = hiddenValue(object,"被占有")
+        for(let occupy of 被占有){
             const source = occupy.占有来源
             const num = occupy.占有数量
             const 效率 = countWorkEfficiency(source,object,num,"unit")

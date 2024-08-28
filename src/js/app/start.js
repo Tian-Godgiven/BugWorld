@@ -13,8 +13,9 @@ import { unlockWorkToBugNest, joinWork, startWork} from '../Object/Work.js'
 import { addAbleFacilityToBugNest, createFacilityObject } from '../Object/Facility.js'
 import { createChooseTile } from '../Tiles/chooseTile.js'
 import { createEventTile } from '../Tiles/event_tile/eventTile.js'
-import { createEvent, startEvent } from '../Object/Event.js'
+import { createEvent, happenEvent, startEvent } from '../Object/Event.js'
 import { random } from 'lodash'
+import { findState, findStatePath } from '../State/State.js'
 
 
 export function start(){
@@ -24,7 +25,6 @@ export function start(){
 	const area = createArea("平原","测试")
 	//在区域内创建一座虫巢并移动过去
 	let bugNest = createBugNest("genisis-nest","测试")
-	console.log(bugNest)
 	bugNestJoinArea(bugNest,area)
 	moveToBugNest(bugNest)
 
@@ -55,7 +55,6 @@ export function start(){
 
 	//开始这些工作
 	const findFood = startWork(bugNest,"觅食")
-	console.log(findFood)
 	const adventure1 = startWork(bugNest,"探索")
 	const adventure2 = startWork(bugNest,"探索")
 	const feed = startWork(bugNest,"哺育")
@@ -89,10 +88,13 @@ export function start(){
 	const eventpower = random(1,10)
 	startEvent(event1,bugNest,"测试",eventpower)
 
-	//创建事件信息栏
+	//创建事件信息Tile
 	createEventTile(bugNest)
 
-	
+	//随机发生一个事件
+	happenEvent(bugNest,"测试")
+
+	start()
 
 	// //创建建设信息栏
 	// createBuildTile(bugNest)

@@ -4,6 +4,7 @@ import { getInformation, getStateUnit, stateValue } from "../../State/State";
 
 import "../../../css/Tiles/eventTile.css"
 import { bindSlide } from "../../Modules/tile/tileButton";
+import { hiddenValue } from "../../State/Hidden";
 
 let 事件Tile
 //创建事件Tile
@@ -38,10 +39,10 @@ export function updateEventInfoDiv(bugNest){
     const area = stateValue(bugNest,"所处")
     //显示发生事件的概率,超出概率边界的部分，即为事件发生的概率
     const 总概率 = stateValue(area,"繁荣","num") + 100
-    const 当前概率 = 总概率 - parseInt(bugNest.事件信息.概率边界)
+    const 当前概率 = 总概率 - hiddenValue(bugNest,["事件信息","概率边界"])
     const 事件概率 = Math.round(当前概率 / 总概率 * 100) + "%" 
     //显示事件的发生倾向
-    const 倾向边界 = parseInt(bugNest.事件信息.倾向边界)
+    const 倾向边界 = hiddenValue(bugNest,["事件信息","倾向边界"])
     const 好事倾向 = stateValue(area,"平和","num") + 5
     const 坏事倾向 = stateValue(area,"威胁","num") + 5
     const 倾向总值 = 好事倾向+坏事倾向
@@ -77,7 +78,8 @@ export function updateEventTile(bugNest){
     //更新事件信息div
     updateEventInfoDiv(bugNest)
     //遍历bugNest中的[进行中→事件]，依次将其中的事件对象添加到事件Tile中
-    for(let event of bugNest.进行中.事件){
+    const 进行中事件 = hiddenValue(bugNest,["进行中","事件"])
+    for(let event of 进行中事件){
         appendEventTileDiv(event)
     }
 }
@@ -86,16 +88,17 @@ export function updateEventTile(bugNest){
 export function appendEventTileDiv(event){
     let type
     let container 
+    
     //判断这个事件的状态：预告中/进行中/留存中
-    if(event.预告中 == true){
+    if(hiddenValue(event,"预告中") == true){
         type = "预告"
         container = $("#eventTile_预告 .eventTile_eventContainer")
     }
-    else if(event.进行中 == true){
+    else if(hiddenValue(event,"进行中") == true){
         type = "进行"
         container = $("#eventTile_进行 .eventTile_eventContainer")
     }
-    else if(event.留存中 == true){
+    else if(hiddenValue(event,"存留中") == true){
         type = "留存"
         container = $("#eventTile_留存 .eventTile_eventContainer")
     }

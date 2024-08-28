@@ -9,9 +9,10 @@ import { countWorkEfficiency } from "../../Object/Work";
 import { updateOrderTileBugDiv} from "./orderTile";
 import { createRandomId } from "../../app/global_ability";
 import { stateToDiv } from "../../Modules/stateDiv"
+import { hiddenValue } from "../../State/Hidden";
 
 //显示命令菜单
-export function showOrderTileMenu(object,type){
+export function showOrderTileMenu(object,bugNest,type){
     //显示子菜单，清空其中的内容
     const order_menu = $("#命令_menu")
     const free_num = getFreeBug(object)
@@ -25,12 +26,13 @@ export function showOrderTileMenu(object,type){
 
     const dataDiv = $("<div></div>")
     //根据type创建对应的子菜单内容
+
+    //该单位空闲时
     if(type == "free"){
-        const bugNest = stateValue(object,"所属")
-        const works = bugNest.进行中.工作
-        //遍历目标所处的虫巢内的正在进行的工作，显示其可以进行的命令div
-        for(let 工作 of works){
-            //判断其是否可以进行这个工作
+        //遍历当前虫巢内的正在进行的工作，显示该实体对象可以进行的命令div
+        const 进行中工作 = hiddenValue(bugNest,["进行中","工作"])
+        for(let 工作 of 进行中工作){
+            //判断其是否满足该工作的需求
             if(runObjectMovement(工作,"需求",object)){
                 //将这个事务做成一个命令div，添加到子菜单中
                 const orderDiv = createOrderDiv(object,工作,free_num,0)
@@ -38,9 +40,11 @@ export function showOrderTileMenu(object,type){
             }
         }
     }
+    //该单位忙碌时
     else if(type == "busy"){
         //遍历目标正在参与的事务 
-        for(let occupy of object.被占有){
+        const 被占有 = hiddenValue(object,"被占有")
+        for(let occupy of 被占有){
             const 事务 = occupy.占有来源
             const busy_num = occupy.占有数量
             //将这个事务做成一个命令div，添加到子菜单中

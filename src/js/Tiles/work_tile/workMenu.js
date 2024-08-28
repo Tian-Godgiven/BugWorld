@@ -8,6 +8,7 @@ import { stateToDiv } from "../../Modules/stateDiv"
 import { dataTile } from "../../Modules/tile/tile.js"
 import { createRandomId } from "../../app/global_ability.js"
 import { runObjectMovement } from "../../State/Movement.js"
+import { hiddenValue } from "../../State/Hidden.js"
 
 //点击一个工作栏弹出选择虫群对象的子页面
 export function showWorkMenu(){
@@ -24,10 +25,11 @@ function updateWorkMenu(){
 	// 获取虫巢，遍历其中的[已解锁→工作]
 	const bugNest = $("#工作").data("object")
 	let data_div = $("<div></div>")
-	for(let work of bugNest.已解锁.工作){
+	const 已解锁工作 = hiddenValue(bugNest,["已解锁","工作"])
+	for(let work of 已解锁工作){
 		//不会显示[进行中]==true的工作，如果这个工作的[功能→独立]=true，也会显示
 		//如果这个工作可以显示,则在其中显示它
-		if(work.进行中 != true && work.功能.显示 != false && work.功能.新增 != false){
+		if(hiddenValue(work,"进行中") != true && work.功能.显示 != false && work.功能.新增 != false){
 			//做成div加进去
 			const addWork_div = createAddWorkDiv(work)
 			data_div.append(addWork_div)

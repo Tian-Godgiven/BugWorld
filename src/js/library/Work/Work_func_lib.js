@@ -4,6 +4,7 @@ import { getFocusingBugNest } from "../../Object/BugNest"
 import { createFacility } from "../../Object/Facility"
 import { startWork } from "../../Object/Work"
 import { haveEntry } from "../../State/Entry"
+import { hiddenValue } from "../../State/Hidden"
 import { stateValue } from "../../State/State"
 import { createChooseTile } from "../../Tiles/chooseTile"
 import { createOrderDiv } from "../../Tiles/order_tile/orderMenu"
@@ -75,7 +76,8 @@ export const 修建设施 = {
         //生成选项
         const choices = []
         const bugNest = getFocusingBugNest()
-        for(let facility_key in bugNest.已解锁.设施建造){
+        const 设施建造 = hiddenValue(bugNest,["已解锁","设施建造"])
+        for(let facility_key in 设施建造){
             let facility = createFacility(facility_key,"预览",null)
             const objectDiv = $(objectToDiv(facility)).data("object",facility)
             choices.push({
@@ -83,7 +85,7 @@ export const 修建设施 = {
                 选项事件:{
                     选择时:function(){
                         //返回设施对应的建造工作
-                        return bugNest.已解锁.设施建造[facility_key]
+                        return 设施建造[facility_key]
                     }
                 }
             })

@@ -3,6 +3,7 @@ import { stateToDiv } from "../../Modules/stateDiv"
 import { dataTile } from "../../Modules/tile/tile"
 import { createFacilityWork } from "../../Object/Facility"
 import { startWork, stopWork } from "../../Object/Work"
+import { hiddenValue } from "../../State/Hidden"
 import { runObjectMovement } from "../../State/Movement"
 import { getStateUnit, stateValue } from "../../State/State"
 import Facility_Work_lib from "../../library/Facility/Facility_Work_lib.json"
@@ -47,7 +48,7 @@ export function updateFacilityMenu(facility){
 	//升级
 	if(facility.功能.升级){
 		const 升级container = $(`<div class="facilityMenu_div"><span>升级</span></div>`)
-		for(let 升级work of facility.工作.升级){
+		for(let 升级work of hiddenValue(facility,["工作","升级"])){
 			//创建一个workDiv
 			const 升级div = createFacilityMenuWorkDiv(升级work)
 			升级container.append(升级div)
@@ -57,7 +58,7 @@ export function updateFacilityMenu(facility){
 	//拆除
 	if(facility.功能.拆除!==false){
 		const 拆除container = $(`<div class="facilityMenu_div"><span>拆除</span></div>`)
-		const 拆除work = facility.工作.拆除
+		const 拆除work = hiddenValue(facility,["工作","拆除"])
 		//创建一个workDiv
 		const 拆除div = createFacilityMenuWorkDiv(拆除work)
 		拆除container.append(拆除div)
@@ -74,10 +75,11 @@ function createFacilityMenuWorkDiv(work){
 	const 进度div = stateToDiv(work,"进度",stateValue(work,"进度","stateObject"))
 	let 属性div = $("<div></div>")
 	let btn
+	const work_进行中 =hiddenValue(work,"进行中")
 	//判断这个工作是否在进行中,若正在进行
-	if(work.进行中 == true){
+	if(work_进行中 == true){
 		//属性div：
-		const 效率div = $(`<div class="state">效率：${work.总效率 + getStateUnit(work,"效率")}</div>`)
+		const 效率div = $(`<div class="state">效率：${hiddenValue(work,"总效率") + getStateUnit(work,"效率")}</div>`)
 		// 填充属性div
 		属性div.append(效率div,进度div)
 		//“结束工作”按键
@@ -90,7 +92,7 @@ function createFacilityMenuWorkDiv(work){
 		})
 	}
 	//若并未进行
-	else if(work.进行中 == false){
+	else if(work_进行中 == false){
 		//填充属性Div:
 		const 需求div = stateToDiv(work,"需求",stateValue(work,"需求","stateObject"))
 		属性div.append(需求div,进度div)

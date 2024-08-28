@@ -10,6 +10,7 @@ import { initObject, occupySpace } from "./Object";
 import { runObjectMovement } from "../State/Movement";
 import { appendLog } from "../Tiles/logTile";
 import { updateOrderTile, updateOrderTileBugDiv } from "../Tiles/order_tile/orderTile";
+import { hiddenValue } from "../State/Hidden";
 
 class Bug {
 	constructor() {
@@ -34,8 +35,10 @@ class Bug {
 			饥饿: "生命/回合",
 			回复: "生命/回合"
 		};
+		this.隐藏 = {
+			被占有 : [],
+		}
 		this.行为={};
-		this.被占有=[];
 	}
 }
 
@@ -82,7 +85,8 @@ export function occupyBug(bug,need_num,source){
 
 	//判断这个占有源是否存在，如果已经存在，则增加其数量
 	let temp = false
-	for(let i of bug.被占有){
+	const 被占有 = hiddenValue(bug,"被占有")
+	for(let i of 被占有){
 		if(source == i.占有来源){
 			i.占有数量 += need_num
 			temp = true
@@ -97,9 +101,9 @@ export function occupyBug(bug,need_num,source){
 			占有来源:source
 		}
 		//放入被占有属性中
-		bug.被占有.push(occupy)
-		//将对象放入占有源的“占有对象”中
-		source.占有.push(bug)
+		被占有.push(occupy)
+		//将对象放入占有源的隐藏属性“占有”中
+		hiddenValue(source,"占有").push(bug)
 	}
 
 	//刷新命令Tile中对应对象的bugDiv
@@ -109,10 +113,11 @@ export function occupyBug(bug,need_num,source){
 export function unoccupyBug(bug,bug_num,source){
 	let occupy
 	let occupy_index 
-	for(let i of bug.被占有){
+	const 被占有 = hiddenValue(bug,"被占有")
+	for(let i of 被占有){
 		if(source == i.占有来源){
 			occupy = i
-			occupy_index = bug.被占有.indexOf(occupy)
+			occupy_index = 被占有.indexOf(occupy)
 			break;
 		}
 	}
@@ -132,9 +137,10 @@ export function unoccupyBug(bug,bug_num,source){
 	}
 	//若减少数量刚好为占有数量，则删除对应的占用对象
 	else if(bug_num == occupy.占有数量){
-		bug.被占有.splice(occupy_index,1)
-		const source_index = source.占有.indexOf(bug)
-		source.占有.splice(source_index,1)
+		被占有.splice(occupy_index,1)
+		const 占有 = hiddenValue(source,"占有")
+		const source_index = 占有.indexOf(bug)
+		占有.splice(source_index,1)
 	}
 	else{
 		console.log("解除占用的数量错误！",bug_num)
@@ -145,7 +151,8 @@ export function unoccupyBug(bug,bug_num,source){
 }
 //获得一个指定占有对应的占有信息
 export function getOccupyBug(bug,source){
-	for(let i of bug.被占有){
+	const 被占有 = hiddenValue(bug,"被占有")
+	for(let i of 被占有){
 		if(source == i.占有来源){
 			return i.占有数量
 		}
@@ -158,7 +165,8 @@ export function getOccupyBug(bug,source){
 export function getFreeBug(bug){
 	let 数量 = stateValue(bug,"数量")
 	//遍历其占有对象，依次减去被占有的数量
-	for( let occupy of bug.被占有){
+	const 被占有 = hiddenValue(bug,"被占有")
+	for( let occupy of 被占有){
 		数量 -= occupy.占有数量
 	}
 	return 数量
@@ -201,8 +209,9 @@ export function bugJoinTo(bug, target, source) {
 }
 //返回对象是否参与了某个事务
 export function haveOccupy(object, source) {
-	//遍历对象的[被占有]数组
-	for (let occupy of object.被占有) {
+	//遍历对象的[被占有]属性
+	const 被占有 = hiddenValue(object,"被占有")
+	for (let occupy of 被占有) {
 		if (occupy.占有来源 == source) {
 			return true
 		}

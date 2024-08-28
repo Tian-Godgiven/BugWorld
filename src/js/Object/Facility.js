@@ -11,6 +11,8 @@ import { appendLog } from "../Tiles/logTile"
 import { createWork, createWorkWithData, unlockWorkToBugNest } from "./Work"
 import { haveEntry } from "../State/Entry"
 import { createImpact, impactToObject } from "../State/Impact"
+import { hiddenValue } from "../State/Hidden"
+import { newError } from "../app/global_ability"
 
 class Facility{
 	constructor(){
@@ -34,7 +36,9 @@ class Facility{
 			升级 : false,
 			拆除 : true
 		}
-		this.工作 = {}
+		this.隐藏 = {
+			工作 : {}
+		}
 	}
 }
 
@@ -59,19 +63,20 @@ export function createFacility(facility_key,source,num=null,states){
 	//载入功能
 	Object.assign(facility.功能 , json.功能)
 
+	const 设施工作 = hiddenValue(facility,"工作")
 	//填装设施工作
 	if(facility.功能.升级){
-		facility.工作["升级"] = []
+		设施工作["升级"] = []
 		const 升级s = Facility_Work_lib[facility_key]["升级"]
 		for(let key in 升级s){
 			const work = createFacilityWork(facility_key,["升级",key],facility)
-			facility.工作["升级"].push(work)
+			设施工作["升级"].push(work)
 		}
 	}
 	//拆除
 	if(facility.功能.拆除!==false){
 		const work = createFacilityWork(facility_key,"拆除",facility)
-		facility.工作["拆除"] = work
+		设施工作["拆除"] = work
 	}
 
 	return facility
@@ -132,10 +137,11 @@ export function unlockFacilityToBugNest(facility_key,work_source,bugNest){
 		const build = createFacilityWork(facility_key,"建造",work_source)
 		//解锁这个“建造”工作
 		unlockWorkToBugNest(build,bugNest)
-		bugNest.已解锁.设施建造[facility_key] = build
+		const 设施建造 = hiddenValue(bugNest,["已解锁","设施建造"])
+		设施建造[facility_key] = build
 	}
 	else{
-		throw new error("该设施不存在")
+		newError("000",["该设施不存在"])
 	}
 }
 
@@ -175,14 +181,14 @@ export function facilityJoinToBugNest(facility, bugNest) {
 		}
 
 		//为虫巢解锁这个设施的升级工作和拆除工作
-		const 升级 = facility.工作.升级
-		if(升级){
-			for(let work_key in 升级){
-				const 升级work = 升级[work_key]
+		const 升级works = hiddenValue(facility,["工作","升级"])
+		if(升级works){
+			for(let work_key in 升级works){
+				const 升级work = 升级works[work_key]
 				unlockWorkToBugNest(升级work,bugNest)
 			}
 		}
-		const 拆除work = facility.工作.拆除
+		const 拆除work = hiddenValue(facility,["工作","拆除"])
 		if(拆除work){
 			unlockWorkToBugNest(拆除work,bugNest)
 		}
