@@ -92,9 +92,7 @@ export function start(){
 	createEventTile(bugNest)
 
 	//随机发生一个事件
-	happenEvent(bugNest,"测试")
-
-	start()
+	// happenEvent(bugNest,"测试")
 
 	// //创建建设信息栏
 	// createBuildTile(bugNest)

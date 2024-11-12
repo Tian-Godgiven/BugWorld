@@ -1,0 +1,223 @@
+
+
+
+
+[TOC]
+
+# 命令Tile
+
+显示当前虫群对象的命令占用状态，分为两大部分，其中的div均为orderTile_bugDiv，同一个虫群对象生成的两种orderTile_bugDiv均拥有一个生成时附加的唯一的相同id
+
+## 结构
+
+~~~。
+.tile#命令{
+	data:{object:}
+	.tile_name
+	.tile_data{
+        //空闲的虫巢虫群单位
+        #orderTile_freeBugDiv{
+            .orderTile_title
+            .orderTile_freeBug .orderTile_bugDiv  [bugDiv_id = orderTile_bugDiv_x]
+            （复数个，在生成时按虫群对象提供bugDiv_id，相同的虫群对象有着相同的id）
+        }
+        //正在被占用的虫巢虫群单位
+        #orderTile_busyBugDiv{
+            .orderTile_title
+            .orderTile_busyBug .orderTile_bugDiv  [bugDiv_id = orderTile_bugDiv_x]
+            （同上，复数个）
+        }
+	}
+}
+~~~
+
+空闲的虫群单位div
+
+~~~
+.orderTile_freeBug{
+	data:{
+		object：对应的虫群单位
+	}
+	div（由该对象生成的objectDiv,内容为对象名称）
+	span: x 空闲数量
+}
+belike：对象名称 x [数量]
+~~~
+
+占用的虫群单位div：
+
+~~~
+.orderTile_busyBug{
+    data:{
+        object：对应的虫群单位
+    }
+	div（由该对象生成的objectDiv,内容为对象名称）
+	div{
+		//复数个事务div，显示事务占有数量和对应占有数量所提供的事务效率
+		div{
+			span: x 该事务的占有数量 →
+			div：（由该事务生成的objectDiv,内容为事务名称）
+			span：该事务的效率
+		}
+	}
+}
+belike:对象名称 x [数量] → 正在进行的事务
+	           x [数量] → 正在进行的另一项事务
+~~~
+
+## 方法：
+
+### 	创建命令Tile：createOrderTile(bugNest)
+
+​		bugNest：虫巢对象
+
+​		生成一个命令Tile，关闭=“cube”，对象=“bugNest”
+​		使用bugNest更新这个命令Tile
+​		生成一个命令Menu，绑定命令Tile
+
+### 	更新命令Tile：updateOrderTile(bugNest)
+
+​		bugNest：虫巢单位
+​		将传入的bugNest中的虫群单位的空闲/占有信息更新到“命令Tile”当中
+
+### 	更新bugDiv：updateOrderTileBugDiv(object, bugDiv_id)
+
+​		*object：用于更新这个bugDiv的对象信息，通常是这个bugDiv显示的对象*
+​		*bugDiv_id：需要更新的bugDiv的“bugDiv_id”*
+
+​		更新命令Tile中bugDiv_id对应的bugDiv元素，包括两种元素的信息：
+“.orderTile_freeBug”和”.orderTile_busyBug”
+​		如果不存在对应bugDiv元素，但更新过程中空闲或占有的数量存在，则会创建对应的bugDiv
+​		如果不存在空闲或占有的数量了，但对应的bugDiv仍然存在，则会删除对应的bugDiv
+
+### 	点击bugDiv显示子菜单：
+
+​		点击“.orderTile_bugDiv”元素，会将其聚焦（添加类：“focusing”），并显示对应bug对象的命令菜单orderMenu，根据空闲/占有显示不同的内容
+​		同一时间只会聚焦一个bugDiv元素		
+
+------
+
+# 命令menu
+
+显示指定类型的虫群对象的命令控制子菜单，内容为对应的虫群单位可以进行/正在进行的事务，在其中控制对应虫群单位进行事务的数量/进行的事务的种类
+
+## 结构
+
+~~~
+.tile_menu #命令_menu{
+	data{
+		object：该命令菜单对应的虫群对象
+		bugDiv_id：该命令菜单对应的bugDiv的bugDiv_id
+		free_num：记录对应的虫群对象当前的空闲数量，用于计算同一命令menu下的多个命令div的可用数量
+	}
+	.tile_name
+	.tile_data{
+		div{
+			//复数个命令div
+			.orderTile_orderDiv{
+				.orderDiv_workDiv
+				.orderDiv_numDiv
+			}
+		}
+	}
+}
+~~~
+
+命令div orderDiv
+~~~
+.orderTile_orderDiv{
+	data:{
+		“work”：work，这个命令div所绑定的事务对象
+	}
+	.orderDiv_workDiv{
+		div：事务对象的objectDiv
+		div{
+			div{
+				div:"进度"
+				div:事务对象的进度
+			}
+			div{
+				div:"效率"
+				.orderDiv_效率:事务对象的效率值
+			}
+		}
+	}
+	.orderDiv_numDiv{
+		div{
+			span:"参与数量"
+			.orderDiv_input input{
+				data:{
+					busy_num:这个input的值
+				}
+			}
+			.orderDiv_count{
+				.orderDiv_button .orderDiv_退出
+				.orderDiv_button .orderDiv_加入
+			}
+		}
+	}
+}
+~~~
+
+
+
+## 方法
+
+### 	显示命令菜单：showOrderTileMenu(object,bugDiv_id,type)
+
+​		object：命令菜单所指向的虫群对象
+​		bugDiv_id：命令菜单所指向的bugDiv的bugDiv_id
+​		type：命令菜单所将要显示的类型，分为“busy”和“free”两种
+​		
+​		在命令Tile旁边显示命令菜单，其内容为根据type生成，并绑定bugDiv_id与object
+​		如果type为“free”，则遍历object可以进行的事务，并产生对应的orderDiv
+​		如果type为“busy”，则遍历object正在进行的事务，并产生对应的orderDiv
+
+### 	创建命令Div：createOrderDiv(object,work,free_num,busy_num)
+
+​		object：该命令Div所涉及到的虫群对象，用于计算效率值
+​		work：该命令Div所绑定的事务对象
+​		free_num：object的空闲数量
+​		busy_num：object被work占用的数量，如果是生成类型为free的orderDiv，则默认为0
+
+​		如果work→功能→显示 === false，则不会显示对应work的orderDiv
+​		返回一个orderDiv
+
+### 	[.orderDiv_workDiv]的click事件：切换其相邻的[.orderDiv_numDiv]的显示
+
+​		略
+
+### 	[.orderDiv_input]的input事件：改变对应orderDiv的参与数量
+
+​		如果输入数字大于对应的虫群对象的空闲数量，则将其设为这个空闲数量
+​		如果输入数字小于0，则将其设为0
+​		如果输入非数字，将其设为0
+
+​		如使得输入数字的数量的对应虫群对象进行对应的事务，即输入5时，将有数量=5的虫群单位进行该事务。
+​		同时会更新该input内的data:busy_num
+​							orderTile中对应bugDiv_id的，的bugDiv
+​							当前正在显示的orderMenu(主要是更新其他orderDiv的按键状态)
+
+### 	改变orderDivInput的值，并触发其input事件：changeOrderDivInput(input,value)
+
+​		input：需要被改变值的input对象
+​		value：为这个Input对象提供的值
+​		改变input的值
+​		触发input的“input”事件（也就是上面这个事件）
+
+### 	[.orderDiv_参加/退出]的click事件，改变input的值，长按持续改变
+
+​		若该.orderDiv_参加/退出不为“disable”则点击一次令对应的input的值+1 or -1
+​		长按1秒后，每0.1秒+1 or -1
+​		到达最大值或最小值时自动停止
+
+### 	更新orderDiv的内容：updateOrderDiv(orderDiv,  object，free_num)
+
+​		orderDiv：需要更新内容的orderDiv
+​		object：该orderDiv所对应的虫群单位
+​		free_num：对应object的空闲数量，如果不传入则会使用getFreeBug()获取
+​		
+
+### 	更新所有的orderDiv：updateAllOrderMenu()
+
+​		使用当前orderMenu中绑定的object来更新这个orderMenu中所有的orderDiv

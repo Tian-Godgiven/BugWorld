@@ -1,0 +1,147 @@
+[toc]
+
+# 工作Tile
+
+显示当前虫巢中正在进行的事务，同时也表示这些事务是可以在“命令Tile”中显示给空闲单位的
+
+## 结构
+
+~~~
+#工作.tile{
+	data{
+		"object":bugNest(创建workTile的bugNest对象)
+	}
+	.tile_name
+	.tile_data{
+        #workTile_新增工作
+        #workTile_container{
+            .workTile_div:复数个
+        }
+	}
+}
+~~~
+
+.workTile_div的结构
+~~~
+.workTile_div{
+	data{
+		"work":work
+	}
+	.object：work对象形成的objectDiv
+	div{
+		.state：“进度”属性形成的stateToDiv
+		.state：显示work对象的[总效率]
+	}
+	.work_delete.button.close_btn：关闭按键
+}
+~~~
+
+## 方法
+
+### 1.创建工作Tile：createWorkTile(bugNest)
+
+​		bugNest：虫巢对象
+
+​		创建一个工作Tile，关闭=cube，对象=bugNest
+​		更新其中的内容
+​		创建一个工作Menu
+
+### 2.更新工作Tile：updateWorkTile(bugNest)
+
+​		*bugNest：可选，默认为null，虫巢对象
+
+​		若未传入bugNest，则使用工作Tile绑定的”object“作为bugNest
+​		使用bugNest更新工作Tile的内容，将bugNest[进行中]的工作制成.workTile_div显示在工作Tile中
+
+### 3.向工作Tile中添加工作div：appendWorkTileDiv(work)
+
+​		work：工作对象
+​		
+​		将这个work制成.workTile_div，并添加到#workTile_container的最前方
+
+### 4.创建一个workTile_div：createWorkTileDiv(work)
+
+​		work：工作对象
+
+​		返回一个workTile_div[data→”work”] = work
+
+### 5.[.work_delete]的click事件，结束workTile_div绑定的工作
+
+​		以”中断“方式结束该工作
+
+### 6.删除绑定了指定工作对象的workTile_div：deleteWorkTileDiv(work)
+
+​		work：工作对象
+
+​		查找工作Tile中的.workTile_div中[data→“work”] == work的元素，将其删除并返回true
+​		如果没有查找到对应的元素，返回false
+
+### 7.[#workTile_新增工作]的click事件：打开工作menu
+
+​		showWorkMenu()
+
+# 工作菜单
+
+显示当前虫巢内可以开始进行的工作
+
+## 结构
+
+~~~
+#工作_menu.tile{
+	.tile_name
+	.tile_data{
+		div{
+			.addWork_div：复数个
+		}
+	}
+}
+~~~
+
+.addWork_div
+~~~
+.addWork_div{
+	data{
+		"work":work对象
+	}
+	.object：工作对象产生的objectDiv
+	div{
+		.state：需求
+		.state：进度
+	}
+	*.addWorkDiv_选择：可选
+}
+~~~
+
+## 方法
+
+### 1.显示工作菜单：showWorkMenu()
+
+​	切换工作菜单的显示，已显示的情况下重复执行会隐藏
+
+### 2.更新工作菜单：updateWorkMenu()
+
+​	遍历工作Tile中[data→object]的虫巢对象的[已解锁→工作]
+​	若其[进行中] != true
+​		且[功能→显示] != false
+​		且[功能→新增] != false
+​	则将其制成.workMenu_div，并放入workMenu中
+
+### 3.使用work对象创建新增工作div：createaddWorkDiv(work)
+
+​	work：work对象
+​	
+​	创建一个.addWork_div[data→work] = work，显示工作对象的objectDiv，需求div，进度div，若work[功能→选择] == true，则还会在其中添加一个.addWorkDiv_选择，点击时执行work[行为→选择]参数：（work，这个选择div）
+​	最终返回这个新增工作div
+
+### 4.[#工作.addWork_div]的click事件：
+
+​	令工作Tile中的addWork_div[data→“work”]的工作对象在工作Tile[data→bugNest]中开始工作
+​	若开始工作返回了false，则返回false
+​	若工作对象[功能→独立] != true，则会将这个.workMenu_div移除
+
+
+
+
+
+
+

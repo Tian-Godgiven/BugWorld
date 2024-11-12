@@ -1,0 +1,235 @@
+
+
+
+
+[TOC]
+
+# 选择Tile
+
+给予用户选择操作的一次性Tile，在完成了选择后即会删除
+比起常规的tile，额外持有“选项”部分
+点击选项时，会将其选中，随后点击“确定”时，会触发对应的选项事件，如果有返回值，则这个值也会经由这个创建选项返回
+
+
+
+## 结构
+
+1.Tile的结构
+
+~~~
+.tile #名称（默认“选择”）.chooseTile{
+	attr{
+		*chooseTile_id:可选，唯一标识chooseTile的id，参见下方
+	}
+	data{
+		object:创建时ability里中的对象
+	}
+	.tile_name
+	.tile_data{
+		.chooseTile_inner{
+			//选择Tile的介绍性内容
+			.chooseTile_text
+			.chooseTile_choiceContainer{
+                //复数个选项
+                .chooseTile_choiceDiv （+.chooseTile_chosenDiv(被选中的div){
+                	*.chooseTile_choiceCheckbox(当复选样式为true时存在)
+                	.chooseTile_choiceText
+                }
+             	//额外按键
+                .chooseTile_bonusDiv{
+                    .chooseTile_确认（可选）
+                    .chooseTile_取消（可选）
+                }	
+             }
+		}
+	}
+}
+
+
+~~~
+
+2.选项容器的结构：
+
+~~~
+.chooseTile_choiceContainer{
+    data{
+        已选择：[已经选择了的chooseTile_choiceDiv队列，先进先出]
+        复选值：{
+        	max:>=1的整数，并且>=min,默认为1
+        	min:>=1的整数，并且<=max，默认为1
+        }
+        返回：bool或"auto",默认为"auto"
+        立即选择:bool,默认为true
+       	自动关闭:bool，默认为true
+    }
+    prop{
+        确认：bool，默认为true
+    }
+}
+~~~
+
+3.选项Div结构
+
+~~~
+.chooseTile_choiceDiv{
+    data{
+        object:选项绑定的对象,
+        优先级：选项在确认时，对应的“选择时”事件的执行优先级，默认为0,
+        选项事件：{
+        	选择时：可选，建议必需，选项被选中后确认选择时触发的事件
+        	未选择时：可选，选择没有被选中后确认选择时触发的事件
+        	选中时：可选，选项被选中时触发的事件
+        	失去选中时：可选，选项在被选中后，又失去选择时触发的事件
+        	自定义选项名称：可选，不会在常规流程中执行，请使用方法6“执行选项的选项事件”来执行
+        }
+    }
+}
+~~~
+
+所有的选项事件在执行时，都固定会传入两个参数：
+
+func(containerObject, choiceObject)
+	containerObject：选项容器内部存储的对象
+	choiceObject: 选择div内部存储的对象
+
+## 方法
+
+### 1.创建选择Tile（createChooseTile(title, text, choice, ability)
+
+​	title：字符串，该选择Tile的标题，默认为“选择”
+​	text：字符串、dom对象、jquery对象、亦或一个完整的dom对象字符串，该选择Tile内部将会显示的内容，通常为描述性内容
+​	choice：数组对象或html对象，前者包含该选择Tile内部的数个选项，将按照顺序排列对应的选项，不同的选项需要绑定对应的选择事件。后者则会直接放入选择Tile内部，需要预先绑定好对应的选择事件
+
+~~~
+[
+	{
+		选项内容：选项显示在div中的内容
+		选项事件：{
+			选择时：确认选中该选项时触发的事件
+			选中时：可选，被选中时触发的事件，通常是一个函数
+			失去选中时：可选，被选中后，又失去选中时触发的事件，通常是一个函数
+		}
+		选项样式类：可选，类名称组成的数组，用于为选项附加通用的样式类，其中的类名称不添加"."，就是单纯的类名称
+			[类1，类2，类3]
+			为这些类添加诸如：.类1.chooseTile_chosenDiv{}的规则可以影响其选中和未选中时的样式
+		选项样式：可选，css字典字典，该选项生成时所使用的样式，会覆盖掉通用样式
+		优先级：可选，整数，默认为0，当可以进行复选时，在确认选择时，选中了多个选项时，会按照优先级来执行选中的选项的选项事件的“选择时”和“未选择时”事件，优先级相同的情况下，按照顺序执行
+		对象：可选，object对象，该对象绑定在div的data:object中
+		默认选中：可选，bool，
+			若为true，则将这个选项div设为“已选择”（chooseTile_chosenDiv()
+			如果可选择数量小于设定为“默认选项”，会选中较为靠后的几个选项
+	}
+]
+~~~
+
+ability：字典对象，设置该选择Tile的一些功能，除特殊标识以外的功能均为可选，包括：
+
+~~~
+{
+	chooseTile_id：字符串，一个用于标识选择tile的唯一属性，其保存在chooseTile的attr:“chooseTile_id”属性中
+	重复：bool或“取代”或“关闭”，默认为“false”
+		创建chooseTile时，若已存在相同chooseTile_id的.chooseTile时采取的措施
+		false：禁止创建重复的chooseTile
+		true：允许创建重复的chooseTile
+		"取代"：会将已存在的相同chooseTile_id的chooseTile删除，再创建新的chooseTile
+		“关闭”：会将已有的chooseTile关闭，不会进行其他操作
+	标题居中：bool，默认为true=>选择Tile的标题名居中显示
+	对象:object对象，该选择Tile会绑定该对象
+	立即选择：bool，默认为false
+		若为true，则显示这个选择Tile的同时会创建黑屏遮盖，此时无法进行除选择以外的操作，也无法关闭这个选择Tile，在进行选择后解除。
+	复选：false或{max：数字,min：数字}，默认为false，其中数字>=1且max>=min
+		若为false则不可以进行复选，最多选择一个选项，此时点击另一个选项会导致已选择的选项失去“选中”
+		若为后者，则表示max最多可以同时选择多少个选项，min表示最少需要同时选择多个选项，如若max<min，则会报错
+	复选样式：false,"checkbox"，"arrow"，在复选的max值大于1时，默认为true，否则默认为false
+		为"checkbox"时，选项div前方会显示一个带有checkbox的input标签，其类为“.chooseTile_choiceCheckbox"
+		为"checkbox"时，选项div前方会显示一个箭头向→的三角形div，其类为“.chooseTile_choiceA"
+		为false时，使得选项div拥有边框，相互保持间距
+	关闭：bool或“auto”，默认为“auto”
+		若为true，则会在选择Tile内显示“关闭”按钮，设置tile_ability的关闭 = "delete"
+		若为“auto”，则仍然会显示“关闭”按钮，同时在确认选择时自动关闭这个选择Tile
+		若为false，则不会显示“关闭”按钮，即使进行选择，也不会自动关闭选择tile，此时需要以其他方式关闭选择tile
+	确认：bool,默认为true
+		若为true，则在选项部分的最后添加一个“确认”和“取消”按键，
+			只有在点击“确认”键之后，才会执行所有选择的选项的事件			
+		若为false，则在选择了指定数量的选项后立即执行这些选项的事件，通常用于单选选择，也有一定的使用空间，例如选项内部是描述性文字的情况
+			此时会在右下角标注“没有后悔的机会”
+	取消：bool，默认为true
+		若为true，则在选项部分的最后添加一个“取消”按键，具体位置在“确认”按键的右侧
+			点击“取消”会将所有已经选择了的选项取消选择
+		若为false，则不会添加这样一个按键
+	返回：bool或“auto”,默认为"auto"
+		 在完成了选择后，是否将选择事件返回的值响应到创建选择Tile时返回的submitEmitter处
+		若为true则表示必定返回，若为false则表示必定不返回,此时返回false
+		若为auto则表示若选择事件有返回值，则返回，若无返回值则返回false
+	选项排列：字符串，包括：
+			1.横向：在复选最大值为1时，默认为该选项
+				选项将会放置在flex父元素中横向放置
+			2.竖向：在复选最大值大于1时，默认为该选项
+				选项将会放置在普通div父元素中竖向放置，并且选项div将会得到“.chooseTile_竖向”类
+	通用样式：可选，css字典，对应的css字典会应用到所有选项上，会被“选项”内部的样式所覆盖
+	位置：参见模块对象→tile，默认为普通tile位置
+		若设定“立即选择”为true，则会显示在tile_container中心
+	尺寸：同上，默认为普通tile尺寸
+		若设定“立即选择”为true，则会显示为横置的长方形
+	css文件：在选择Tile内部所使用的css
+}
+~~~
+
+​	该函数返回的值是一个字典，内容包括：
+
+~~~
+{
+    chooseTile：所创建这个选择Tile本身
+    submitEmitter：所有选择Tile使用的确认监听器
+    submit_id：这个选择Tile的确认监听id
+}
+~~~
+
+
+​	若要得到选择Tile在确认选项时，选项事件返回的值，则需要按照如下操作：
+
+~~~
+submitEmitter.on(submit_id,(returnValue)=>{
+	//此处的returnValue即为确认时，选项事件返回的值	
+})
+~~~
+
+### 2.选中选项div（chooseChoice(choiceDiv)
+
+​	choiceDiv：选择的选项div
+​	为这个选项Div添加一个类“chooseTile_chosenDiv”，并令其被选中，触发其“被选中时”事件
+
+### 3.取消选中选项Div（unchooseChoice(choiceDiv)
+
+​	choiceDiv：选择的选项div
+​	判断这个选项是否具备对应类“chooseTile_chosenDiv”，若是，则令这个选项Div失去这个类
+
+### 4.确认选择（submitChoose(choiceContainer)
+
+​	choiceContainer：确认选择的选项容器
+​	按照优先级→排列顺序，使得选项容器当中的选项的选项事件依次被触发：已选择的选项触发“选择时”，未选择的选项触发“未选择时”，触发后返回的结果，将根据设置决定是否进行返回
+​	如果设置“关闭”=“auto”，则会在返回结果前关闭选项Tile
+​	如果设置“立即选择”，则会在返回结果前删除黑屏
+​	在确认选择后，会使得所有选项设置为“unable”，此时无法修改选项
+
+​	***tips:***
+​		未选择的选项和已选择的选项的事件只会按照“优先级”→“排列顺序”的顺序来触发，不会优先触发“已选择事件”或“未选择事件”，若要实现类似的效果，需要谨慎定义对应选项的优先级。
+
+### 5.取消选择（cancelChoose(choiceContainer)
+
+​	choiceContainer：确认选择的选项容器
+​	使得选项容器当中已选择的选项都取消选择，遍历对它们执行方法3
+
+### 6.执行选项的选项事件（runChoiceEvent(choiceDiv, eventName)
+
+​	choiceDiv：所执行事件的选项
+​	eventName：所执行的事件名称
+​	如若对应eventName在choiceDiv的data()中存在，且是一个函数，则会执行对应的函数事件，并返回对应的返回结果。对应的事件名称和事件需要在创建选项时，于“选项事件”字典中传入。**默认**的4个选项事件包括：[选择时，未选择时，选中时，失去选中时]
+​	所有的这些事件在执行时，传入的参数固定为
+​	func( containerObject, choiceObject, choiceDiv,)
+​		containerObject：选项容器内部存储的对象，在ability参数的“对象”中传入
+​		choiceObject: 选择div内部存储的对象，在选项参数的“对象”中传入
+​		choiceDiv：该选项容器本身，通常是一个jquery对象
+​	***Tips:*** 
+​		1.可以通过“选中时“和”失去选中时“事件来修改选项Div的样式
+​		2.使用choiceDiv查询最近的父元素类以修改选项Tile或选项容器的样式

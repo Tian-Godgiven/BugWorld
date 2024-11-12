@@ -1,0 +1,54 @@
+[toc]
+
+
+
+#### 1.判断对象是否具备某个/某些词条
+
+如果传入多个参数将以“或”的方式寻找到最前的符合的词条/词条组
+
+haveEntry(object, 词条/词条组, ……)
+
+传入的参数可以是：
+	1.词条字符串：判断这个object对象是否具备这个词条
+	2.词条字符串数组：判断这个object对象是否同时具备这些词条
+	3.多个词条字符串/数组：按照传入的顺序，判断这个object对象是否具备这个/些词条，如果没有具备的话，则向后继续判断
+
+返回值：
+	true: 对象的[词条属性]中至少具备传入的参数中的1个词条/组
+	false: 对象的[词条属性]不具备所有传入的参数中的词条/组
+
+eg:
+	haveEntry(object，“工虫”)：判断对象是否具备词条[工虫]
+	haveEntry(object，[“工虫”，“成虫”])：判断对象是否同时具备词条[工虫]和[成虫]
+	haveEntry(object，[“工虫”，“成虫”]，“虫后”)：
+	判断对象是否满足以下条件之一
+		1.同时具备词条[工虫]和[成虫]
+		2.具备词条[虫后]
+
+#### 2.获得一个Dom对象相较于目标对象的offset位置信息
+
+getOffsetBeside(target,self,vertical,horizontal)
+
+~~~
+target：该dom对象的参照对象，必须是一个已经存在于文档中的结构
+self：可选，该dom对象本身，必须是一个实际的dom对象，即拥有width和height值	
+	如果不传入self，则只能获得“bottom,same_top”和“right,same_left”值
+vertical：垂直方向上的需求，默认为“same_top”，可选值包括：
+    top：self全部在target之上
+    center：self与target垂直的中心重合
+    bottom：self全部在target之下
+    same_top：self与target的顶部重合
+    same_bottom：self与target的底部重合
+horizontal：水平方向上的需求，默认为“right”，可选值包括：
+    left：self全部在target左侧
+    center：self与target水平的中心重合
+    right：self全部在target右侧
+    same_left：self与target的左侧重合
+    same_right：self与target的右侧重合
+~~~
+
+
+
+​	
+
+该函数返回一个{top:xxx,left:xxx}字典，为self元素在满足水平和垂直方向上的要求的offset坐标信息，使用$(self).offset(返回值)设置self元素的位置

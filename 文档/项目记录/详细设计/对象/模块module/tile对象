@@ -1,0 +1,64 @@
+[toc]
+
+
+
+# Tile
+
+Tile基础的显示模块，方形圆角，由标题，内容，按键组成。
+
+
+
+## 结构
+
+​	标题（tile_name)：字符串，tile名称
+​	内容（tile_data)：显示在Tile内的html内容
+​	按键（tile_buttonContainer)：显示在tile右上角的按键功能。包含如下种类：
+​			（1）关闭：将该Tile的显示隐藏或删除		
+​			（2）清空：将该Tile的内容全部删除
+
+## 方法
+
+### 1.创建Tile：createTile(name,data,ability)
+
+​	其中：name：字符串，该Tile的标题
+​				data：html对象，该Tile的内容，可以为空
+​				ability：字典，该Tile的功能，包含如下选项：
+
+~~~
+{
+	关闭：不为false时，该tile将拥有一个“关闭”按键，点击会触发对应的事件
+		  为“hide”时，点击“关闭”按键会将这个Tile隐藏
+		  为“delete”时，点击“关闭”按键会将这个Tile删除
+           为“cube”时，点击“关闭”按键后，会在cube区显示一个对应的Tile的cubeDiv，
+	清空：为true时，该tile将拥有一个“清空”按键，点击后将清空这个Tile的
+	对象：不为false时，将传入的object对象绑定到Tile上
+	拖动：为false时，该tile将无法被拖动
+	修改尺寸：为false时，该tile将无法被拖动边缘以修改尺寸
+	位置: 为如下结构的字典时，会设置该tile的Left和top值为对应数值
+        {
+            left:数字(单位px)或带有单位的数字，或百分比（相对对象为tile_container)
+            top:同上
+        }
+	尺寸：字典，设置该tile的初始大小
+		{
+			width:同上
+			height:同上
+		}
+	标题居中：bool,默认为false，若为true则使得这个tile的标题居中显示
+}
+~~~
+
+​	创建Tile后，会将其放入#tile_conatiner	
+
+### 2.使得两个Div绑定为滑动控制关系：getSlideDiv(slide_control,slider,direction=“down"，hide = true , slideTime = 200)
+
+​	slide_control：控制slider进行滑动的div，通过点击这个div控制slider滑动
+​	slider：进行滑动的div
+​	direction:slider进行滑动的方向，默认为向下滑动（down)
+​	hide：slider的初始状态，若为true，则初始为隐藏，否则不隐藏
+​	slideTime：滑动所需时间，该数值越小则滑动速度越快
+
+​	分别为slide_control分配类“btn_slideControl”，并绑定[data→btn_slideTarget = slider]
+​			为slider分配类“btn_slider"，并绑定[data→btn_slideControl = direction]
+​	通过点击slide_control，可以使得slider按照给定的方向和速度进行滑动显示和隐藏
+

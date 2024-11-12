@@ -1,0 +1,90 @@
+[toc]
+
+# 设施Tile
+
+设施Tile是显示当前虫巢的设施对象的详情与操作的Tile，设施Tile带有一个设施menu
+
+## 结构
+
+~~~
+#设施.tile{
+	data{
+		"object":bugNest对象
+	}
+	.tile_name
+	.tile_data{
+		div{
+			.facilityTile_div（复数个）{}
+		}
+	}
+	#设施_menu.tile_menu
+}
+~~~
+
+.facilityTile_div的结构
+~~~
+.facilityTile_div{
+	data{
+		"object":这个设施Div所绑定的设施对象
+	}
+	.object：带有等级的设施对象的objectDiv
+	div：该设施对象的[属性→数量]
+	div：该设施对象的[属性→词条]
+	div：该设施对象的[属性→效果]
+	.facilityDiv_btnContainer{
+		.facilityDiv_控制.button
+	}
+}
+~~~
+
+
+
+## 方法
+
+### 1.创建设施Tile：createFacilityTile(bugNest)
+
+​	bugNest：该设施Tile绑定的虫巢对象
+​	
+​	设施Tile的“关闭”为cube
+​	同时创建设施Menu，随后使用bugNest更新该设施Tile
+
+### 2.更新设施Tile：updateFacilityTile(bugNest)
+
+​	bugNest：该设施Tile绑定的虫巢对象
+
+​	清空设施Tile的数据内容，随后重新为其绑定[data→bugNest]
+​	遍历bugNest的[属性→设施]字典，将其中的所有设施对象创建为facilityTile_div，并添加到一个div中，最终将这个div添加到设施Tile当中
+
+### 3.创建一个设施div：createFacilityDiv(facility)
+
+​	facility：该div显示并绑定的设施对象
+
+​	创建一个.facilityTile_div，其中显示该设施对象的：名称x等级 + 数量 + 词条 + 效果 + 控制按键，返回这个设施div
+
+### 4.[.facilityDiv_控制]的“click”事件：点击控制按键，显示设施菜单
+
+​	获取这个.facilityTile_div绑定的[data→“object”]的设施对象，并显示对应设施的设施菜单
+
+# 设施Menu
+
+设施Menu显示指定设施的操作行为，升级、拆除工作
+
+## 结构
+
+~~~
+#设施_menu.tile_menu{
+	.tile_name:控制→[设施对象的名称]
+	.tile_data{
+		.facilityMenu_container{
+			*facili
+		}
+	}
+}
+~~~
+
+## 方法
+
+
+
+
+
