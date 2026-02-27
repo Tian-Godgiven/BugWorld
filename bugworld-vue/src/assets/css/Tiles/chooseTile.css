@@ -1,0 +1,67 @@
+/* 选项Tile的数据 */
+.chooseTile > .tile_data > div{
+    width: 90%;
+    margin:auto;
+}
+
+/* 选项文本 */
+
+
+/* 选项容器 */
+.chooseTile_choiceContainer{
+    margin: 10px 0px;
+    margin-right: 8px;
+}
+.chooseTile_choiceContainer.flex{
+    align-items: center;
+    align-items: stretch; /* 使得所有子项在交叉轴上拉伸 */
+    justify-content: center;
+    gap: 1px 5px;
+}
+/* 选项的基础样式 */
+.chooseTile_choiceDiv{
+    border:1px solid black;
+    min-width: 50px;
+    max-width: 200px;
+    padding:0px 5px;
+    margin:0px auto;
+
+    display: flex;
+    flex-direction: column; /* 保持内容垂直排列 */
+    align-items: center;
+    justify-content: center;
+}
+.chooseTile_choiceDiv > .chooseTile_choiceText{
+    width: 100%;
+    word-wrap: break-word;
+    hyphens: auto;
+}
+
+/* 选项的竖向样式 */
+.chooseTile_choiceDiv.chooseTile_竖向{
+    border:none;
+    padding:1px 0px;
+    margin:0;
+    margin-right: 8px;
+    flex-direction: row; /* 保持内容横向排列 */
+}
+
+/* 被选中的选项 */
+.chooseTile_chosenDiv{
+    background-color: lightgray;
+}
+
+/* 额外按键 */
+.chooseTile_bonusDiv{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: right;
+}
+.chooseTile_bonusDiv > div{
+    border:1px solid black;
+    padding:2px 4px;
+    margin: 5px;
+    margin-left: 0px;
+}
+
