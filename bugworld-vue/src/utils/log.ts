@@ -1,48 +1,48 @@
-// 日志管理模块
-// 提供统一的日志接口，供游戏逻辑层调用
+import { ref } from 'vue'
 
-export interface LogEntry {
-  时间: number
-  内容: any[]
+/**
+ * 日志系统
+ *
+ * 从 src/js/Tiles/logTile.js 迁移
+ *
+ * 功能：
+ * 1. 向日志中添加信息
+ * 2. 支持对象和文本混合显示
+ * 3. 与LogTile组件配合使用
+ */
+
+// LogTile组件的引用
+let logTileRef: any = null
+
+/**
+ * 设置LogTile组件引用
+ */
+export function setLogTileRef(ref: any): void {
+    logTileRef = ref
 }
 
-// 日志存储
-const logs: LogEntry[] = []
-
-// 日志监听器（供Vue组件订阅）
-type LogListener = (log: LogEntry) => void
-const listeners: LogListener[] = []
-
-// 添加日志
+/**
+ * 向日志中添加信息
+ *
+ * @param information - 信息数组，可以包含字符串或对象
+ *
+ * 示例：
+ * appendLog(['开始工作：', workObject])
+ * appendLog(['信息：', object])
+ */
 export function appendLog(information: any[]): void {
-  const log: LogEntry = {
-    时间: Date.now(),
-    内容: information
-  }
-  logs.push(log)
-
-  // 通知所有监听器
-  listeners.forEach(listener => listener(log))
-}
-
-// 清空日志
-export function clearLog(): void {
-  logs.length = 0
-}
-
-// 获取所有日志
-export function getLogs(): LogEntry[] {
-  return logs
-}
-
-// 订阅日志更新（供Vue组件使用）
-export function subscribeLog(listener: LogListener): () => void {
-  listeners.push(listener)
-  // 返回取消订阅函数
-  return () => {
-    const index = listeners.indexOf(listener)
-    if (index > -1) {
-      listeners.splice(index, 1)
+    // 如果LogTile组件已初始化，则添加到UI
+    if (logTileRef && logTileRef.appendLog) {
+        logTileRef.appendLog(information)
     }
-  }
+}
+
+/**
+ * 创建日志栏（已废弃）
+ *
+ * 在Vue版本中，LogTile通过GameView.vue直接创建
+ * 这个函数保留是为了兼容旧代码
+ */
+export function createLogTile(): void {
+    // 在Vue版本中不需要手动创建，LogTile在GameView中声明式创建
 }

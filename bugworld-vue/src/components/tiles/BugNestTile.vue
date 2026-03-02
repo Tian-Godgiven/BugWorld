@@ -1,94 +1,63 @@
 <template>
-  <Tile :名称="'虫巢信息'" :功能="{ 关闭: 'cube' }">
-    <div v-if="bugNest" class="bugnest-info">
-      <div class="info-row">
-        <span class="label">名称：</span>
-        <ObjectDiv :object="bugNest" />
-      </div>
-      <div class="info-row">
-        <span class="label">所处：</span>
-        <ObjectDiv :object="所处" />
-      </div>
-      <div class="info-row">
-        <span class="label">空间：</span>
-        <span>{{ 空间now }} / {{ 空间max }}</span>
-      </div>
-      <div class="info-row">
-        <span class="label">生产：</span>
-        <span>{{ 生产 }}</span>
-      </div>
-      <div class="info-row">
-        <span class="label">消耗：</span>
-        <span>{{ 消耗 }}</span>
-      </div>
-    </div>
-  </Tile>
+    <Tile
+        ref="tileRef"
+        title="虫巢"
+        :close-type="'hide'"
+        :initial-visible="false"
+        :size="{ width: 300 }"
+    >
+        <StateDisplay v-if="bugNest" :object="bugNest" />
+    </Tile>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref } from 'vue'
 import Tile from '../common/Tile.vue'
-import ObjectDiv from '../common/ObjectDiv.vue'
-import { stateValue } from '../../core/state/State'
-import { useGameStore } from '../../stores/game'
-import { getUpdateCounter } from '../../utils/reactivity'
+import StateDisplay from '../common/StateDisplay.vue'
 
-const gameStore = useGameStore()
-const bugNest = computed(() => gameStore.focusingBugNest)
+/**
+ * 虫巢Tile组件
+ *
+ * 从 src/js/Tiles/bugNestTile.js 迁移
+ *
+ * 功能：
+ * 1. 显示虫巢的属性信息
+ * 2. 支持更新虫巢数据
+ */
 
-// 订阅更新计数器以触发响应式更新
-const updateCounter = getUpdateCounter()
+const tileRef = ref<InstanceType<typeof Tile> | null>(null)
+const bugNest = ref<any>(null)
 
-const 所处 = computed(() => {
-  // 访问 updateCounter 以建立响应式依赖
-  updateCounter.value
-  if (!bugNest.value) return null
-  return stateValue(bugNest.value, '所处')
-})
+// 创建虫巢Tile
+function create(bugNestObject: any): void {
+    bugNest.value = bugNestObject
+    tileRef.value?.show()
+}
 
-const 空间now = computed(() => {
-  // 访问 updateCounter 以建立响应式依赖
-  updateCounter.value
-  if (!bugNest.value) return 0
-  return stateValue(bugNest.value, ['空间', 'now'])
-})
+// 更新虫巢Tile数据
+function update(bugNestObject: any): void {
+    bugNest.value = bugNestObject
+}
 
-const 空间max = computed(() => {
-  // 访问 updateCounter 以建立响应式依赖
-  updateCounter.value
-  if (!bugNest.value) return 0
-  return stateValue(bugNest.value, ['空间', 'max'])
-})
+// 显示tile
+function show(): void {
+    tileRef.value?.show()
+}
 
-const 生产 = computed(() => {
-  // 访问 updateCounter 以建立响应式依赖
-  updateCounter.value
-  if (!bugNest.value) return 0
-  return stateValue(bugNest.value, '生产')
-})
+// 隐藏tile
+function hide(): void {
+    tileRef.value?.hide()
+}
 
-const 消耗 = computed(() => {
-  // 访问 updateCounter 以建立响应式依赖
-  updateCounter.value
-  if (!bugNest.value) return 0
-  return stateValue(bugNest.value, '消耗')
+// 暴露方法
+defineExpose({
+    create,
+    update,
+    show,
+    hide
 })
 </script>
 
 <style scoped>
-.bugnest-info {
-  padding: 8px;
-}
-
-.info-row {
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-}
-
-.label {
-  font-weight: 600;
-  margin-right: 8px;
-  min-width: 60px;
-}
+/* 虫巢Tile样式 */
 </style>

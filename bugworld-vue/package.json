@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@types/lodash": "^4.17.24",
+    "gridmanager": "^3.2.4",
     "lodash": "^4.17.23",
     "mitt": "^3.0.1",
     "pinia": "^3.0.4",

@@ -1,395 +1,424 @@
 <template>
-  <Tile
-    :title="title"
-    :closeable="closeable"
-    :center-title="centerTitle"
-    :position="position"
-    :size="size"
-    class="choose-tile"
-  >
-    <!-- 选项文本 -->
-    <div class="choose-text" v-html="text"></div>
+    <Teleport to="body">
+        <Tile
+            v-for="instance in chooseTiles"
+            :key="instance.id"
+            :title="instance.title"
+            :close-type="instance.ability.关闭 === false ? 'none' : 'delete'"
+            :initial-visible="true"
+            :style="getTileStyle(instance)"
+            class="chooseTile"
+            :class="{ 'title-center': instance.ability.标题居中 !== false }"
+            @close="handleClose(instance)"
+        >
+            <!-- 选项文本 -->
+            <div class="chooseTile_text" v-html="getTextContent(instance.text)"></div>
 
-    <!-- 选项容器 -->
-    <div
-      class="choice-container"
-      :class="{ flex: 选项排列 === '横向' }"
-    >
-      <div
-        v-for="(choice, index) in choices"
-        :key="index"
-        class="choice-div"
-        :class="{
-          'chosen': isChosen(index),
-          'unable': submitted,
-          'choice-vertical': 选项排列 === '竖向'
-        }"
-        :style="{ ...通用样式, ...choice.选项样式 }"
-        @click="toggleChoice(index)"
-      >
-        <!-- 复选框 -->
-        <input
-          v-if="复选样式 === 'checkbox'"
-          type="checkbox"
-          class="choice-checkbox"
-          :checked="isChosen(index)"
-          :disabled="submitted"
-        />
-        <!-- 箭头 -->
-        <div
-          v-if="复选样式 === 'arrow'"
-          class="choice-arrow arrow-right"
-          :style="{ display: isChosen(index) ? 'block' : 'none' }"
-        ></div>
-        <!-- 选项内容 -->
-        <span class="choice-text">
-          <component v-if="choice.选项内容Component" :is="choice.选项内容Component" />
-          <span v-else v-html="choice.选项内容"></span>
-        </span>
-      </div>
-    </div>
+            <!-- 选项容器 -->
+            <div
+                class="chooseTile_choiceContainer"
+                :class="{ flex: instance.选项排列 === '横向' }"
+            >
+                <div
+                    v-for="(choice, index) in instance.choices"
+                    :key="index"
+                    class="chooseTile_choiceDiv"
+                    :class="[
+                        {
+                            chooseTile_chosenDiv: instance.已选择.includes(index),
+                            chooseTile_竖向: instance.选项排列 === '竖向',
+                            unable: choiceDisabled[instance.id]?.[index]
+                        },
+                        ...(choice.选项样式类 || [])
+                    ]"
+                    :style="{ ...instance.通用样式, ...choice.选项样式 }"
+                    @click="handleChoiceClick(instance, index)"
+                >
+                    <!-- 复选框 -->
+                    <input
+                        v-if="instance.复选样式 === 'checkbox'"
+                        type="checkbox"
+                        class="chooseTile_choiceCheckbox"
+                        :checked="instance.已选择.includes(index)"
+                        :disabled="choiceDisabled[instance.id]?.[index]"
+                        @click.stop
+                    />
 
-    <!-- 额外按键 -->
-    <div class="bonus-div">
-      <div v-if="showConfirm" class="button confirm-btn" @click="submitChoose">确认</div>
-      <div v-if="showCancel" class="button cancel-btn" @click="cancelChoose">取消</div>
-    </div>
-  </Tile>
+                    <!-- 复选箭头 -->
+                    <div
+                        v-if="instance.复选样式 === 'arrow'"
+                        class="chooseTile_choiceArrow arrow_right"
+                        :style="{ display: instance.已选择.includes(index) ? 'block' : 'none' }"
+                    ></div>
+
+                    <!-- 选项内容 -->
+                    <span class="chooseTile_choiceText">
+                        <template v-if="typeof choice.选项内容 === 'string'">
+                            {{ choice.选项内容 }}
+                        </template>
+                        <component v-else :is="choice.选项内容" />
+                    </span>
+                </div>
+            </div>
+
+            <!-- 额外按钮 -->
+            <div class="chooseTile_bonusDiv">
+                <div v-if="instance.确认" class="chooseTile_确认" @click="handleSubmit(instance)">
+                    确认
+                </div>
+                <div v-if="instance.取消" class="chooseTile_取消" @click="handleCancel(instance)">
+                    取消
+                </div>
+            </div>
+        </Tile>
+
+        <!-- 黑色遮罩 -->
+        <BlackScreen v-if="hasImmediateChoice" />
+    </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import Tile from '../common/Tile.vue'
-import { sortByLevel, countValue } from '../../utils/global_ability'
-import mitt, { type Emitter } from 'mitt'
+import BlackScreen from '../common/BlackScreen.vue'
+import {
+    getChooseTiles,
+    getSubmitEmitter,
+    removeChooseTile,
+    type ChooseTileInstance
+} from '@/composables/useChooseTile'
+import { sortByLevel, countValue } from '@/utils/global_ability'
 
-interface ChoiceOption {
-  选项内容: string | any
-  选项内容Component?: any
-  选项事件?: {
-    选中时?: (containerObject?: any, choiceObject?: any, index?: number) => any
-    失去选中时?: (containerObject?: any, choiceObject?: any, index?: number) => any
-    选择时?: (containerObject?: any, choiceObject?: any, index?: number) => any
-    未选择时?: (containerObject?: any, choiceObject?: any, index?: number) => any
-  }
-  选项样式?: Record<string, any>
-  选项样式类?: string[]
-  对象?: any
-  优先级?: number | string
-  默认选中?: boolean
-}
+/**
+ * 选择Tile组件
+ *
+ * 从 src/js/Tiles/chooseTile.js 迁移
+ *
+ * 功能需求：
+ * 1. 创建选择对话框，支持单选/多选
+ * 2. 支持自定义选项内容
+ * 3. 支持确认/取消按钮
+ * 4. 支持复选设置（min/max）
+ * 5. 支持选项排列（横向、竖向）
+ * 6. 支持立即选择模式（显示遮罩）
+ * 7. 支持重复处理（关闭、取代、禁止）
+ * 8. 支持选项事件
+ *
+ * 原文件位置：src/js/Tiles/chooseTile.js (442行)
+ */
 
-interface ChooseAbility {
-  chooseTile_id?: string
-  重复?: boolean | '关闭' | '取代'
-  标题居中?: boolean
-  对象?: any
-  立即选择?: boolean
-  关闭?: boolean
-  复选?: { max?: number; min?: number }
-  复选样式?: 'checkbox' | 'arrow' | false
-  确认?: boolean
-  取消?: boolean
-  返回?: boolean | 'auto'
-  选项排列?: '横向' | '竖向'
-  通用样式?: Record<string, any>
-  位置?: { top?: number; left?: number }
-  尺寸?: { width?: string | number; height?: string | number }
-}
+const chooseTiles = getChooseTiles()
+const submitEmitter = getSubmitEmitter()
 
-const props = defineProps<{
-  title?: string
-  text: string
-  choices: ChoiceOption[]
-  ability?: ChooseAbility
-  emitter: Emitter<any>
-  submitId: string
-}>()
+// 选项禁用状态
+const choiceDisabled = ref<Record<string, Record<number, boolean>>>({})
 
-const emit = defineEmits<{
-  close: []
-}>()
-
-// 解析 ability 配置
-const ability = computed(() => props.ability || {})
-const centerTitle = computed(() => ability.value.标题居中 !== false)
-const closeable = computed(() => {
-  if (ability.value.关闭 === true) return true
-  if (ability.value.关闭 === false) return false
-  return 'delete'
-})
-const position = computed(() => ability.value.位置)
-const size = computed(() => ability.value.尺寸)
-const 通用样式 = computed(() => ability.value.通用样式 || {})
-
-// 复选配置
-const 复选值 = computed(() => {
-  const 复选 = ability.value.复选
-  let max = 1
-  let min = 1
-  if (复选) {
-    max = 复选.max && 复选.max >= 1 ? 复选.max : 1
-    min = 复选.min && 复选.min >= 1 ? 复选.min : 1
-  }
-  if (max < min) {
-    throw new Error('错误：在设置选项容器的复选值时，复选值的max小于了min')
-  }
-  return { max, min }
+// 是否有立即选择的Tile
+const hasImmediateChoice = computed(() => {
+    return chooseTiles.value.some((t) => t.立即选择)
 })
 
-const 复选样式 = computed(() => {
-  if (ability.value.复选样式 != null) {
-    return ability.value.复选样式
-  }
-  return 复选值.value.max > 1 ? 'checkbox' : false
-})
-
-const 选项排列 = computed(() => {
-  if (ability.value.选项排列) {
-    return ability.value.选项排列
-  }
-  return 复选值.value.max > 1 ? '竖向' : '横向'
-})
-
-const showConfirm = computed(() => ability.value.确认 !== false)
-const showCancel = computed(() => ability.value.取消 !== false)
-const 需要确认 = computed(() => ability.value.确认 !== false)
-const 返回设置 = computed(() => {
-  if (ability.value.返回 === true || ability.value.返回 === false) {
-    return ability.value.返回
-  }
-  return 'auto'
-})
-const 自动关闭 = computed(() => ability.value.关闭 !== true && ability.value.关闭 !== false)
-
-// 状态
-const 已选择 = ref<number[]>([])
-const submitted = ref(false)
-
-// 初始化默认选中
-onMounted(() => {
-  props.choices.forEach((choice, index) => {
-    if (choice.默认选中) {
-      chooseChoice(index)
+// 获取文本内容
+function getTextContent(text: string | HTMLElement): string {
+    if (typeof text === 'string') {
+        return text
     }
-  })
-})
-
-function isChosen(index: number): boolean {
-  return 已选择.value.includes(index)
+    return ''
 }
 
-function toggleChoice(index: number): void {
-  if (submitted.value) return
+// 获取Tile样式
+function getTileStyle(instance: ChooseTileInstance): Record<string, string> {
+    const style: Record<string, string> = {}
 
-  if (isChosen(index)) {
-    unchooseChoice(index)
-  } else {
-    chooseChoice(index)
-  }
-}
-
-function chooseChoice(index: number): void {
-  if (isChosen(index)) return
-
-  // 检测已选择数量是否超过最大值
-  if (已选择.value.length === 复选值.value.max) {
-    const shiftIndex = 已选择.value.shift()
-    if (shiftIndex !== undefined) {
-      unchooseChoice(shiftIndex)
+    if (instance.ability.位置) {
+        const pos = instance.ability.位置
+        if (pos.top !== undefined) style.top = `${pos.top}px`
+        if (pos.left !== undefined) style.left = `${pos.left}px`
+        if (pos.right !== undefined) style.right = `${pos.right}px`
+        if (pos.bottom !== undefined) style.bottom = `${pos.bottom}px`
     }
-  }
 
-  // 选中
-  已选择.value.push(index)
+    if (instance.ability.尺寸) {
+        const size = instance.ability.尺寸
+        if (size.width) style.width = typeof size.width === 'number' ? `${size.width}px` : size.width
+        if (size.height)
+            style.height = typeof size.height === 'number' ? `${size.height}px` : size.height
+    }
 
-  // 触发选中时事件
-  runChoiceEvent(index, '选中时')
-
-  // 判断是否自动提交
-  if (已选择.value.length === 复选值.value.max && !需要确认.value) {
-    submitChoose()
-  }
+    return style
 }
 
-function unchooseChoice(index: number): void {
-  if (!isChosen(index)) return
+// 点击选项
+function handleChoiceClick(instance: ChooseTileInstance, index: number): void {
+    // 如果已禁用，不处理
+    if (choiceDisabled.value[instance.id]?.[index]) return
 
-  // 取消选中
-  const idx = 已选择.value.indexOf(index)
-  if (idx !== -1) {
-    已选择.value.splice(idx, 1)
-  }
+    const isChosen = instance.已选择.includes(index)
 
-  // 触发失去选中时事件
-  runChoiceEvent(index, '失去选中时')
-}
-
-function submitChoose(): void {
-  // 验证选择数量
-  if (已选择.value.length < 复选值.value.min) {
-    console.log('需要选择更多选项')
-    return
-  }
-  if (已选择.value.length > 复选值.value.max) {
-    console.log('选择的选项过多')
-    return
-  }
-
-  // 按优先级排序
-  const array = props.choices.map((choice, index) => ({
-    对象: index,
-    优先级: choice.优先级 || 0
-  }))
-  const sorted_indices = sortByLevel(array)
-
-  // 执行选项事件并计算返回值
-  let returnValue: any
-  for (const index of sorted_indices) {
-    if (isChosen(index)) {
-      const value = runChoiceEvent(index, '选择时')
-      returnValue = countValue(returnValue, value)
+    if (isChosen) {
+        // 取消选中
+        unchooseChoice(instance, index)
     } else {
-      const value = runChoiceEvent(index, '未选择时')
-      returnValue = countValue(returnValue, value)
+        // 选中
+        chooseChoice(instance, index)
     }
-  }
-
-  submitted.value = true
-
-  // 判断是否返回值
-  let ifReturn = false
-  if (返回设置.value === true) {
-    ifReturn = true
-  } else if (返回设置.value === 'auto' && returnValue) {
-    ifReturn = true
-  }
-
-  // 发送事件
-  if (ifReturn) {
-    props.emitter.emit(props.submitId, returnValue)
-  } else {
-    props.emitter.emit(props.submitId, false)
-  }
-
-  // 自动关闭
-  if (自动关闭.value) {
-    emit('close')
-  }
 }
 
-function cancelChoose(): void {
-  // 取消所有选中
-  const chosen = [...已选择.value]
-  chosen.forEach(index => unchooseChoice(index))
+// 选中选项
+function chooseChoice(instance: ChooseTileInstance, index: number): void {
+    if (instance.已选择.includes(index)) return
+
+    // 检查是否超过最大值
+    const max = instance.复选值.max
+    if (instance.已选择.length === max) {
+        // 移除第一个选中的
+        const firstIndex = instance.已选择.shift()
+        if (firstIndex !== undefined) {
+            unchooseChoice(instance, firstIndex)
+        }
+    }
+
+    // 添加到已选择
+    instance.已选择.push(index)
+
+    // 触发选中事件
+    runChoiceEvent(instance, index, '选中时')
+
+    // 判断是否自动提交
+    if (instance.已选择.length === max && !instance.确认) {
+        handleSubmit(instance)
+    }
 }
 
-function runChoiceEvent(index: number, eventName: string): any {
-  const choice = props.choices[index]
-  if (!choice.选项事件) return
+// 取消选中
+function unchooseChoice(instance: ChooseTileInstance, index: number): void {
+    const chosenIndex = instance.已选择.indexOf(index)
+    if (chosenIndex === -1) return
 
-  const func = choice.选项事件[eventName as keyof typeof choice.选项事件]
-  if (func) {
+    // 从已选择中移除
+    instance.已选择.splice(chosenIndex, 1)
+
+    // 触发失去选中事件
+    runChoiceEvent(instance, index, '失去选中时')
+}
+
+// 确认选择
+function handleSubmit(instance: ChooseTileInstance): void {
+    const 已选择 = instance.已选择
+    const min = instance.复选值.min
+    const max = instance.复选值.max
+
+    // 检查选择数量
+    if (已选择.length < min) {
+        console.log('需要选择更多选项')
+        return
+    }
+    if (已选择.length > max) {
+        console.log('选择的选项过多')
+        return
+    }
+
+    // 按优先级排序选项
+    const array = instance.choices.map((choice, index) => ({
+        对象: index,
+        优先级: choice.优先级 || 0
+    }))
+    const sortedIndices = sortByLevel(array) as number[]
+
+    // 执行选项事件并计算返回值
+    let returnValue: any
+    for (const index of sortedIndices) {
+        if (已选择.includes(index)) {
+            // 执行"选择时"事件
+            const value = runChoiceEvent(instance, index, '选择时')
+            returnValue = countValue(returnValue, value)
+        } else {
+            // 执行"未选择时"事件
+            const value = runChoiceEvent(instance, index, '未选择时')
+            returnValue = countValue(returnValue, value)
+        }
+
+        // 禁用选项
+        if (!choiceDisabled.value[instance.id]) {
+            choiceDisabled.value[instance.id] = {}
+        }
+        choiceDisabled.value[instance.id][index] = true
+    }
+
+    // 判断是否返回值
+    let ifReturn = false
+    if (instance.返回 === true) {
+        ifReturn = true
+    } else if (instance.返回 === 'auto' && returnValue) {
+        ifReturn = true
+    }
+
+    // 发送事件
+    if (ifReturn) {
+        submitEmitter.emit(instance.submitId, returnValue)
+    } else {
+        submitEmitter.emit(instance.submitId, false)
+    }
+
+    // 自动关闭
+    if (instance.自动关闭) {
+        removeChooseTile(instance.id)
+    }
+}
+
+// 取消选择
+function handleCancel(instance: ChooseTileInstance): void {
+    // 取消所有已选中的选项
+    const selectedCopy = [...instance.已选择]
+    for (const index of selectedCopy) {
+        unchooseChoice(instance, index)
+    }
+}
+
+// 关闭Tile
+function handleClose(instance: ChooseTileInstance): void {
+    removeChooseTile(instance.id)
+}
+
+// 触发选项事件
+function runChoiceEvent(
+    instance: ChooseTileInstance,
+    index: number,
+    eventName: '选中时' | '失去选中时' | '选择时' | '未选择时'
+): any {
+    const choice = instance.choices[index]
+    if (!choice.选项事件) return
+
+    const func = choice.选项事件[eventName]
+    if (!func) return
+
     const choiceObject = choice.对象
-    const containerObject = ability.value.对象
-    return func(containerObject, choiceObject, index)
-  }
+    const containerObject = instance.ability.对象
+
+    return func(containerObject, choiceObject, null)
 }
+
+// 监听默认选中
+watch(
+    chooseTiles,
+    (newTiles) => {
+        for (const instance of newTiles) {
+            // 处理默认选中
+            instance.choices.forEach((choice, index) => {
+                if (choice.默认选中 && !instance.已选择.includes(index)) {
+                    chooseChoice(instance, index)
+                }
+            })
+        }
+    },
+    { deep: true, immediate: true }
+)
 </script>
 
-<style scoped lang="scss">
-.choose-tile {
-  :deep(.tile-data) > div {
+<style scoped>
+/* 从 src/css/Tiles/chooseTile.css 迁移 */
+
+.chooseTile {
+    z-index: 1000;
+}
+
+.chooseTile :deep(.tile_data > div) {
     width: 90%;
     margin: auto;
-  }
 }
 
-.choose-text {
-  margin: 8px 0;
+.chooseTile_text {
+    margin-bottom: 10px;
+    font-size: 16px;
 }
 
-.choice-container {
-  margin: 10px 0;
-  margin-right: 8px;
+.chooseTile_choiceContainer {
+    margin: 10px 0px;
+    margin-right: 8px;
+}
 
-  &.flex {
+.chooseTile_choiceContainer.flex {
     display: flex;
     align-items: stretch;
     justify-content: center;
     gap: 1px 5px;
-  }
 }
 
-.choice-div {
-  border: 1px solid black;
-  min-width: 50px;
-  max-width: 200px;
-  padding: 0 5px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  user-select: none;
+.chooseTile_choiceDiv {
+    border: 1px solid black;
+    min-width: 50px;
+    max-width: 200px;
+    padding: 0px 5px;
+    margin: 0px auto;
 
-  &.chosen {
-    background-color: lightgray;
-  }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+}
 
-  &.unable {
-    pointer-events: none;
-    opacity: 0.6;
-  }
+.chooseTile_choiceDiv:hover:not(.unable) {
+    background-color: #f0f0f0;
+}
 
-  &.choice-vertical {
-    border: none;
-    padding: 1px 0;
-    margin: 0;
-    margin-right: 8px;
-    flex-direction: row;
-  }
-
-  .choice-text {
+.chooseTile_choiceDiv > .chooseTile_choiceText {
     width: 100%;
     word-wrap: break-word;
     hyphens: auto;
-  }
-
-  .choice-checkbox {
-    margin-right: 4px;
-  }
-
-  .choice-arrow {
-    width: 0;
-    height: 0;
-    border-style: solid;
-    margin-right: 6px;
-
-    &.arrow-right {
-      border-width: 5px 0 5px 8px;
-      border-color: transparent transparent transparent #000;
-    }
-  }
 }
 
-.bonus-div {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: right;
+.chooseTile_choiceDiv.chooseTile_竖向 {
+    border: none;
+    padding: 1px 0px;
+    margin: 0;
+    margin-right: 8px;
+    flex-direction: row;
+}
 
-  > div {
+.chooseTile_chosenDiv {
+    background-color: lightgray;
+}
+
+.chooseTile_choiceDiv.unable {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.chooseTile_choiceCheckbox {
+    cursor: pointer;
+}
+
+.chooseTile_choiceArrow {
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 8px solid black;
+}
+
+.chooseTile_bonusDiv {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: right;
+}
+
+.chooseTile_bonusDiv > div {
     border: 1px solid black;
     padding: 2px 4px;
     margin: 5px;
-    margin-left: 0;
+    margin-left: 0px;
     cursor: pointer;
+    user-select: none;
+}
 
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.1);
-    }
-  }
+.chooseTile_确认:hover {
+    background-color: #e0e0e0;
+}
+
+.chooseTile_取消:hover {
+    background-color: #e0e0e0;
 }
 </style>

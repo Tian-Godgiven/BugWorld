@@ -7,7 +7,13 @@
       "Bash(npm create:*)",
       "Bash(npm install:*)",
       "Bash(cp:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(find .:*)",
+      "Bash(rm:*)",
+      "Bash(copy:*)",
+      "Bash(dir bugworld-vue\\\\src:*)",
+      "Bash(dir:*)",
+      "Bash(xargs grep:*)"
     ]
   }
 }

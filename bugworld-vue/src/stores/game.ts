@@ -1,33 +1,74 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
+/**
+ * 游戏全局状态 Store
+ *
+ * 管理游戏中的全局状态，包括：
+ * - 当前聚焦的地区和虫巢
+ * - ID 计数器
+ * - 其他游戏全局状态
+ */
 export const useGameStore = defineStore('game', () => {
-  // 当前聚焦的虫巢
-  const focusingBugNest = ref<any>(null)
+    // ========== 地区相关 ==========
 
-  // 游戏回合数
-  const 回合数 = ref(0)
+    /**
+     * 当前聚焦的地区对象
+     */
+    const focusingArea = ref<any>(null)
 
-  // 所有区域
-  const areas = ref<any[]>([])
+    /**
+     * 地区 ID 计数器
+     */
+    const areaIdCounter = ref(0)
 
-  // 移动到指定虫巢
-  function moveToBugNest(bugNest: any) {
-    focusingBugNest.value = bugNest
-  }
+    /**
+     * 获取下一个地区 ID 并自增
+     */
+    function getNextAreaId(): number {
+        const id = areaIdCounter.value
+        areaIdCounter.value++
+        return id
+    }
 
-  // 下一回合
-  function nextTurn() {
-    回合数.value++
-    // 触发回合结算逻辑
-    // TODO: 实现回合结算
-  }
+    /**
+     * 设置当前聚焦的地区
+     */
+    function setFocusingArea(area: any): void {
+        focusingArea.value = area
+    }
 
-  return {
-    focusingBugNest,
-    回合数,
-    areas,
-    moveToBugNest,
-    nextTurn
-  }
+    // ========== 虫巢相关 ==========
+
+    /**
+     * 当前聚焦的虫巢对象
+     */
+    const focusingBugNest = ref<any>(null)
+
+    /**
+     * 设置当前聚焦的虫巢
+     */
+    function setFocusingBugNest(bugNest: any): void {
+        focusingBugNest.value = bugNest
+    }
+
+    /**
+     * 获取当前聚焦的虫巢
+     */
+    function getFocusingBugNest(): any {
+        return focusingBugNest.value
+    }
+
+    return {
+        // 地区
+        focusingArea,
+        areaIdCounter,
+        getNextAreaId,
+        setFocusingArea,
+
+        // 虫巢
+        focusingBugNest,
+        setFocusingBugNest,
+        getFocusingBugNest
+    }
 })
