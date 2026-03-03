@@ -13,7 +13,8 @@
       "Bash(copy:*)",
       "Bash(dir bugworld-vue\\\\src:*)",
       "Bash(dir:*)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(git rm:*)"
     ]
   }
 }
