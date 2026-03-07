@@ -1,11 +1,13 @@
 import Bug_lib from "../../library/Bug/Bug_lib.json"
 import * as Bug_func_lib from "../../library/Bug/Bug_func_lib"
 
-import { stateValue, pushToState, changeState } from "../state/State"
+import { stateValue, pushToState, changeState, State } from "../state/State"
+import { Status } from "../state/Status"
 import _ from "lodash"
-import { bindObjectCharacteristic } from "./Characteristic"
+import { bindObjectCharacteristic, Characteristic } from "./Characteristic"
 import { initObject, occupySpace } from "./Object"
-import { runObjectMovement } from "../state/Movement"
+import type { GameObject } from "./Object"
+import { runObjectMovement, MovementContainer } from "../state/Movement"
 import { appendLog } from "../../utils/log"
 import { updateOrderTile, updateOrderTileBugDiv } from "../../utils/orderTile"
 import { hiddenValue } from "../state/Hidden"
@@ -13,20 +15,21 @@ import { hiddenValue } from "../state/Hidden"
 /**
  * 虫群对象类
  */
-class Bug {
+export class Bug {
     type: string
     key: string
     属性: {
-        名称: string | null
-        数量: number | null
-        参数: Record<string, any>
-        系数: Record<string, any>
-        特殊: Record<string, any>
-        状态: any[]
-        特性: any[]
-        词条: any[]
-        信息: string | null
-        所属: any[]
+        名称: State
+        数量: State
+        参数: State
+        系数: State
+        特殊: State
+        状态: Status[]
+        特性: Characteristic[]
+        词条: string[]
+        信息: State
+        所属: GameObject[]
+        创建者: GameObject[]
     }
     单位: {
         寿命: string
@@ -37,28 +40,29 @@ class Bug {
         饥饿: string
         回复: string
     }
-    隐藏: {
+    运行时: {
         被占有: Array<{
             占有数量: number
-            占有来源: any
+            占有来源: GameObject
         }>
     }
-    行为: Record<string, any>
+    行为: MovementContainer
 
     constructor() {
         this.type = "object"
         this.key = ""
         this.属性 = {
-            名称: null,
-            数量: null,
-            参数: {},
-            系数: {},
-            特殊: {},
+            名称: {} as State,
+            数量: {} as State,
+            参数: {} as State,
+            系数: {} as State,
+            特殊: {} as State,
             状态: [],
             特性: [],
             词条: [],
-            信息: null,
-            所属: []
+            信息: {} as State,
+            所属: [],
+            创建者: []
         }
         this.单位 = {
             寿命: "回合",
@@ -69,7 +73,7 @@ class Bug {
             饥饿: "生命/回合",
             回复: "生命/回合"
         }
-        this.隐藏 = {
+        this.运行时 = {
             被占有: []
         }
         this.行为 = {}

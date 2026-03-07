@@ -1,9 +1,10 @@
 import Work_lib from "../../library/Work/Work_lib.json"
 import * as Work_func_lib from "../../library/Work/Work_func_lib.js"
-import { runObjectMovement } from "../state/Movement"
-import { stateValue, getStateUnit, changeState } from "../state/State"
+import { runObjectMovement, MovementContainer } from "../state/Movement"
+import { stateValue, getStateUnit, changeState, State } from "../state/State"
 import { getFreeBug, getOccupyBug, occupyBug, unoccupyBug, haveOccupy } from "./Bug"
-import { initObject, loseSource } from "./Object"
+import { initObject, loseSource, addDependency, removeDependency } from "./Object"
+import type { GameObject } from "./Object"
 import { appendWorkTileDiv, deleteWorkTileDiv, updateWorkTile } from "../../utils/workTile"
 import { countValue, negativeValue } from "../../utils/global_ability"
 import { hiddenValue, setHidden } from "../state/Hidden"
@@ -12,19 +13,20 @@ import _ from "lodash"
 /**
  * 工作对象类
  */
-class Work {
+export class Work {
     type: string
     key: string
     id: string | null
     属性: {
-        名称: string | null
-        需求: any
-        消耗: any
-        进度: any
+        名称: State
+        需求: State
+        消耗: State
+        进度: State
         效率: number | string
-        词条: any[]
-        信息: string | null
-        所属: any[]
+        词条: string[]
+        信息: State
+        所属: GameObject[]
+        依赖来源: GameObject[]
     }
     功能: {
         显示: boolean
@@ -32,40 +34,41 @@ class Work {
         独立: boolean
         禁用?: boolean
     }
-    隐藏: {
+    运行时: {
         进行中: boolean
-        总效率: any
-        占有: any[]
+        总效率: number | string | null
+        占有: GameObject[]
     }
-    占有: any[]
-    行为: Record<string, any>
+    占有: GameObject[]
+    行为: MovementContainer
 
     constructor() {
         this.type = "object"
         this.key = ""
         this.id = null
         this.属性 = {
-            名称: null,
-            需求: null,
-            消耗: null,
-            进度: null,
+            名称: {} as State,
+            需求: {} as State,
+            消耗: {} as State,
+            进度: {} as State,
             效率: 0,
             词条: [],
-            信息: null,
-            所属: []
+            信息: {} as State,
+            所属: [],
+            依赖来源: []
         }
         this.功能 = {
             显示: true,
             选择: false,
             独立: false
         }
-        this.隐藏 = {
+        this.运行时 = {
             进行中: false,
             总效率: null,
             占有: []
         }
         this.占有 = []
-        this.行为 = {}
+        this.行为 = new MovementContainer()
     }
 }
 
@@ -96,6 +99,9 @@ export function createWorkWithData(
     func: any
 ): Work {
     const work = new Work()
+    // Work 需要依赖来源（提供者消失则工作消失）
+    // 必须在 initObject 之前调用，否则会被转换为 State 对象
+    addDependency(work, source)
     // 初始化
     initObject(work, key, source, json.属性, func)
     // 载入功能
@@ -139,12 +145,12 @@ export function deleteWorkFrom(
     work: Work | null = null
 ): boolean | void {
     const 已解锁工作 = hiddenValue(target, ["已解锁", "工作"])
-    // 如果给定了工作对象，则直接删除其来源
+    // 如果给定了工作对象，则直接删除其依赖来源
     if (work) {
         // 要求这个工作对象在目标内部
         if (_.includes(已解锁工作, work)) {
-            // 如果删除来源后，对象的来源为空，则删除这个对象
-            if (!loseSource(work, work_source)) {
+            // 如果删除依赖来源后，对象的依赖来源为空，则删除这个对象
+            if (!removeDependency(work, work_source)) {
                 const index = 已解锁工作.indexOf(work)
                 已解锁工作.splice(index, 1)
             }
@@ -153,14 +159,13 @@ export function deleteWorkFrom(
             return false
         }
     } else {
-        // 遍历【虫群对象】的[工作]，删除其中的有着对应来源的工作的[来源]
-        for (let work of 已解锁工作) {
-            const 来源 = stateValue(work, "来源")
-            if (_.some(来源, work_source)) {
-                if (!loseSource(work, work_source)) {
-                    // 如果删除后，来源为空，则会从虫巢中删除该工作
-                    const index = 已解锁工作.indexOf(work)
-                    已解锁工作.splice(index, 1)
+        // 遍历【虫群对象】的[工作]，删除其中的有着对应依赖来源的工作
+        for (let i = 已解锁工作.length - 1; i >= 0; i--) {
+            const work = 已解锁工作[i]
+            if (work.属性.依赖来源 && work.属性.依赖来源.includes(work_source)) {
+                if (!removeDependency(work, work_source)) {
+                    // 如果删除后，依赖来源为空，则会从虫巢中删除该工作
+                    已解锁工作.splice(i, 1)
                 }
             }
         }

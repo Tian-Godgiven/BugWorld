@@ -1,39 +1,42 @@
-import { runObjectMovement } from "../state/Movement"
-import { stateValue, popFromState, pushToState, changeState } from "../state/State"
+import { runObjectMovement, MovementContainer } from "../state/Movement"
+import { stateValue, popFromState, pushToState, changeState, State } from "../state/State"
 import Chara_lib from "../../library/Charactereistic/Characteristic_lib.json"
 import _ from "lodash"
 import { initObject, loseSource } from "./Object"
+import type { GameObject } from "./Object"
 
 /**
  * 特性对象类
  */
-class Characteristic {
+export class Characteristic {
     type: string
     key: string
     属性: {
-        名称: string | null
-        参数: Record<string, any>
-        词条: any[]
+        名称: State
+        参数: State
+        词条: string[]
         优先级: string | number | null
-        信息: string | null
-        所属: any[]
-        来源: any[]
+        信息: State
+        所属: GameObject[]
+        来源: GameObject[]
+        创建者: GameObject[]
     }
-    行为: Record<string, any>
+    行为: MovementContainer
 
     constructor() {
         this.type = "object"
         this.key = ""
         this.属性 = {
-            名称: null,
-            参数: {},
+            名称: {} as State,
+            参数: {} as State,
             词条: [],
             优先级: null,
-            信息: null,
+            信息: {} as State,
             所属: [],
-            来源: []
+            来源: [],
+            创建者: []
         }
-        this.行为 = {}
+        this.行为 = new MovementContainer()
     }
 }
 

@@ -1,8 +1,9 @@
 import Event_lib from "../../library/Event/Event_lib.json"
 import * as Event_func_lib from "../../library/Event/Event_func_lib"
-import { runObjectMovement } from "../state/Movement"
-import { changeState, stateValue } from "../state/State"
+import { runObjectMovement, MovementContainer } from "../state/Movement"
+import { changeState, stateValue, State } from "../state/State"
 import { initObject } from "./Object"
+import type { GameObject } from "./Object"
 import { appendEventTileDiv, deleteEventTileDiv } from "../../utils/eventTile"
 import { random } from "lodash"
 import _ from "lodash"
@@ -48,17 +49,19 @@ initEventTendencyLib()
 /**
  * 事件对象类
  */
-class Event {
+export class Event {
     type: string
     key: string
     属性: {
-        名称: string | null
+        名称: State
         强度: number | null
         持续: number | null
-        效果: any
-        词条: any[]
-        信息: string | null
-        范围: any[]
+        效果: State | null
+        词条: string[]
+        信息: State
+        范围: GameObject[]
+        所属: GameObject[]
+        创建者: GameObject[]
     }
     功能: {
         预告: boolean
@@ -66,26 +69,28 @@ class Event {
         强度: boolean
         操作: boolean
     }
-    隐藏: {
+    运行时: {
         进行中: boolean
     }
     单位: {
         持续: string
         预告: string
     }
-    行为: Record<string, any>
+    行为: MovementContainer
 
     constructor() {
         this.type = "object"
         this.key = ""
         this.属性 = {
-            名称: null,
+            名称: {} as State,
             强度: null,
             持续: null,
             效果: null,
             词条: [],
-            信息: null,
-            范围: []
+            信息: {} as State,
+            范围: [],
+            所属: [],
+            创建者: []
         }
         this.功能 = {
             预告: false,
@@ -93,14 +98,14 @@ class Event {
             强度: false,
             操作: false
         }
-        this.隐藏 = {
+        this.运行时 = {
             进行中: false
         }
         this.单位 = {
             持续: "回合",
             预告: "回合"
         }
-        this.行为 = {}
+        this.行为 = new MovementContainer()
     }
 }
 

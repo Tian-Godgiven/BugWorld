@@ -22,6 +22,17 @@ export interface Movement {
 }
 
 /**
+ * 行为容器类
+ */
+export class MovementContainer {
+    [key: string]: Movement
+
+    constructor() {
+        // 空构造函数，允许动态添加行为
+    }
+}
+
+/**
  * 将一个 JS 对象转换为一个行为效果并返回
  * 要求传入一个 object 作为默认的来源
  */

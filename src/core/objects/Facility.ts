@@ -2,74 +2,69 @@ import Facility_lib from "../../library/Facility/Facility_lib.json"
 import Facility_Work_lib from "../../library/Facility/Facility_Work_lib.json"
 import * as Facility_func_lib from "../../library/Facility/Facility_func_lib"
 import * as Facility_Work_func_lib from "../../library/Facility/Facility_Work_func_lib"
-import { changeState, stateValue } from "../state/State"
+import { changeState, stateValue, State } from "../state/State"
 import { initObject } from "./Object"
-import { runObjectMovement } from "../state/Movement"
+import type { GameObject } from "./Object"
+import { runObjectMovement, MovementContainer } from "../state/Movement"
+import type { Movement } from "../state/Movement"
 import { updateBugNestTile } from "../../utils/bugNestTile"
 import { updateFacilityTile } from "../../utils/facilityTile"
 import { appendLog } from "../../utils/log"
-import { createWork, createWorkWithData, unlockWorkToBugNest } from "./Work"
+import { createWork, createWorkWithData, unlockWorkToBugNest, Work } from "./Work"
 import { haveEntry } from "../state/Entry"
 import { createImpact, impactToObject } from "../state/Impact"
 import { hiddenValue } from "../state/Hidden"
 import { newError } from "../../utils/global_ability"
 import _ from "lodash"
+import { Characteristic } from "./Characteristic"
 
 /**
  * 设施对象类
  */
-class Facility {
+export class Facility {
     type: string
     key: string
     属性: {
-        名称: string | null
+        名称: State
         等级: number | null
         数量: number
-        效果: any
-        特性: any[]
-        词条: any[]
-        信息: string | null
-        所属: any[]
+        效果: State | null
+        特性: Characteristic[]
+        词条: string[]
+        信息: State
+        所属: GameObject[]
+        创建者: GameObject[]
     }
-    行为: {
-        获得: any
-        效果: any
-        结算: any
-        摧毁: any
-    }
+    行为: MovementContainer
     功能: {
         升级: boolean
         拆除: boolean
         新增?: boolean
     }
-    隐藏: {
-        工作: Record<string, any>
+    运行时: {
+        工作: Record<string, Work>
     }
 
     constructor() {
         this.type = "object"
         this.key = ""
         this.属性 = {
-            名称: null,
+            名称: {} as State,
             等级: null,
             数量: 0,
             效果: null,
             特性: [],
             词条: [],
-            信息: null,
-            所属: []
+            信息: {} as State,
+            所属: [],
+            创建者: []
         }
-        this.行为 = {
-            获得: null,
-            效果: null,
-            结算: null,
-            摧毁: null
-        }
+        this.行为 = new MovementContainer()
         this.功能 = {
             升级: false,
             拆除: true
         }
-        this.隐藏 = {
+        this.运行时 = {
             工作: {}
         }
     }
@@ -218,8 +213,8 @@ export function facilityJoinToBugNest(facility: Facility, bugNest: any): boolean
                 for (let old_facility of 设施[facility_key]) {
                     if (haveEntry(old_facility, "堆叠")) {
                         // 令原有的设施对象的数量提升该设施的数量
-                        const source = stateValue(facility, "来源")
-                        addFacilityNum(old_facility, source, num, undefined)
+                        const creator = facility.属性.创建者
+                        addFacilityNum(old_facility, creator, num, undefined)
                     }
                 }
             }

@@ -2,7 +2,7 @@ import _ from "lodash"
 import { newError } from "../../utils/global_ability"
 
 /**
- * 获得一个实体对象的[隐藏]类属性的值
+ * 获得一个实体对象的[运行时]类属性的值
  * 要求这个路径全程有效
  */
 export function hiddenValue(object: any, path: string | string[]): any {
@@ -26,14 +26,14 @@ export function hiddenValue(object: any, path: string | string[]): any {
     }
 
     function hiddenValue_inner(object: any, path: string | string[]): any {
-        let the_object = object["隐藏"]
+        let the_object = object["运行时"]
         let value: any
 
         if (_.isArray(path)) {
             for (let key of path) {
                 if (!the_object) {
                     newError("000", [
-                        "访问隐藏属性的路径有误：",
+                        "访问运行时属性的路径有误：",
                         object,
                         path
                     ])
@@ -50,7 +50,7 @@ export function hiddenValue(object: any, path: string | string[]): any {
 }
 
 /**
- * 设置或修改隐藏属性的值
+ * 设置或修改运行时属性的值
  */
 export function setHidden(object: any, path: string | string[], value: any): void {
     // 如果传入了多个实体对象，则会设置所有实体对象的值
@@ -64,7 +64,7 @@ export function setHidden(object: any, path: string | string[], value: any): voi
     }
 
     function setHidden_inner(object: any, path: string | string[], value: any): void {
-        let the_object = object["隐藏"]
+        let the_object = object["运行时"]
 
         if (_.isArray(path)) {
             const path_copy = [...path] // 复制数组避免修改原数组
@@ -72,7 +72,7 @@ export function setHidden(object: any, path: string | string[], value: any): voi
             for (let key of path_copy) {
                 if (!the_object) {
                     newError("000", [
-                        "访问隐藏属性的路径有误：",
+                        "访问运行时属性的路径有误：",
                         object,
                         path
                     ])

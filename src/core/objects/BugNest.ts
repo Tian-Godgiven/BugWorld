@@ -2,77 +2,85 @@ import BugNest_lib from "../../library/BugNest/BugNest_lib.json"
 import { updateBugNestTile } from "../../utils/bugNestTile"
 import _ from "lodash"
 import { initObject } from "./Object"
-import { bugJoinTo } from "./Bug"
+import type { GameObject } from "./Object"
+import { bugJoinTo, Bug } from "./Bug"
 import { useGameStore } from "../../stores/game"
+import { State } from "../state/State"
+import { Status } from "../state/Status"
+import { Characteristic } from "./Characteristic"
+import { MovementContainer } from "../state/Movement"
+import { Work } from "./Work"
 
 /**
  * 虫巢对象类
  */
-class BugNest {
+export class BugNest {
     type: string
     key: string
     属性: {
-        名称: string | null
-        参数: Record<string, any>
-        系数: Record<string, any>
-        虫群: Record<string, any>
-        设施: Record<string, any>
-        状态: any[]
-        特殊: Record<string, any>
-        特性: any[]
-        词条: any[]
+        名称: State
+        参数: State
+        系数: State
+        虫群: Record<string, Bug[]>
+        设施: Record<string, GameObject[]>
+        状态: Status[]
+        特殊: State
+        特性: Characteristic[]
+        词条: string[]
         所处: {
-            数组: any[]
+            数组: GameObject[]
             数量: number
         }
-        信息: string | null
+        信息: State
         其他: any[]
+        创建者: GameObject[]
     }
     单位: {
         生产: string
         消耗: string
     }
-    隐藏: {
+    运行时: {
         已解锁: {
-            工作: any[]
-            设施建造: Record<string, any>
+            工作: Work[]
+            设施建造: Record<string, Work>
         }
         进行中: {
-            事件: any[]
-            工作: any[]
+            事件: GameObject[]
+            工作: Work[]
         }
         事件信息: {
             概率边界: number
             倾向边界: number
         }
     }
-    行为: Record<string, any>
+    行为: MovementContainer
 
     constructor() {
         this.type = "object"
         this.key = ""
         this.属性 = {
-            名称: null,
-            参数: {},
-            系数: {},
+            名称: {} as State,
+            参数: {} as State,
+            系数: {} as State,
             虫群: {},
             设施: {},
             状态: [],
-            特殊: {},
+            特殊: {} as State,
             特性: [],
             词条: [],
             所处: {
                 数组: [],
                 数量: 1
             },
-            信息: null,
-            其他: []
+            信息: {} as State,
+            其他: [],
+            创建者: []
         }
         this.单位 = {
             生产: "营养/回合",
             消耗: "营养/回合"
         }
-        this.隐藏 = {
+        this.运行时 = {
             已解锁: {
                 工作: [],
                 设施建造: {}

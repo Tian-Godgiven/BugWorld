@@ -1,49 +1,56 @@
 import Area_lib from "../../library/Area/Area_lib.json"
 import _ from "lodash"
 import { initObject } from "./Object"
-import { changeState, pushToState } from "../state/State"
+import type { GameObject } from "./Object"
+import { changeState, pushToState, State } from "../state/State"
 import { useGameStore } from "../../stores/game"
+import { Status } from "../state/Status"
+import { MovementContainer } from "../state/Movement"
+import { Work } from "./Work"
+import { Event } from "./Event"
 
 /**
  * 地区对象类
  */
-class Area {
+export class Area {
     type: string
     key: string
     id: number
     属性: {
-        名称: string | null
-        参数: Record<string, any>
-        状态: any
-        虫巢: any[]
-        来源: any[]
+        名称: State
+        参数: State
+        状态: Status[]
+        虫巢: GameObject[]
+        来源: GameObject[]
+        创建者: GameObject[]
     }
-    隐藏: {
+    运行时: {
         进行中: {
-            工作: any[]
-            事件: any[]
+            工作: Work[]
+            事件: Event[]
         }
     }
-    行为: Record<string, any>
+    行为: MovementContainer
 
     constructor() {
         this.type = "object"
         this.key = ""
         this.id = 0
         this.属性 = {
-            名称: null,
-            参数: {},
-            状态: null,
+            名称: {} as State,
+            参数: {} as State,
+            状态: [],
             虫巢: [],
-            来源: []
+            来源: [],
+            创建者: []
         }
-        this.隐藏 = {
+        this.运行时 = {
             进行中: {
                 工作: [],
                 事件: []
             }
         }
-        this.行为 = {}
+        this.行为 = new MovementContainer()
     }
 }
 
